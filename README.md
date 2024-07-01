@@ -1,8 +1,5 @@
-
-
-
 # improvement.py
-The improvement.py library is a collection of functions designed to facilitate the understanding and elimination of `routine` and `assignable` causes of variation in business and industrial processes. The primary tool to facilitate this understanding is the process behavior chart, otherwise known as the control chart. The improvement.py library is part of the larger body of work called Data Driven Improvement (DDI). The aim of DDI is to propagate the use of Statistical Process Control (SPC) in the modern engineering and business ecosystem. 
+The improvement.py library is a collection of functions designed to facilitate the elimination of `routine` and `assignable` causes of variation from business and industrial processes. The primary tool to facilitate this understanding is the process behavior chart, otherwise known as the control chart. The improvement.py library is part of the larger body of work called Data Driven Improvement (DDI). The aim of DDI is to propagate the use of Statistical Process Control (SPC) in the modern engineering and business ecosystem. 
 
 Visit [CreateHolisticSolutions.com](https://www.createholisticsolutions.com/portfolio) for resources and more details regarding the application and use of `process behavior charts`. 
 
