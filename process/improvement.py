@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 def bar_chart(df, x_axis_data, y_axis_data, figsize=(15,5), title='', y_label='Value', x_label='', 
-              color='tab:blue', x_tick_rotation=0, show_percents='Off', 
+              color='tab:blue', x_tick_rotation=0, show_labels='On', show_percents='Off', 
               round_value=2, dpi=100, target=0, show_target='Off'):
     
     """
