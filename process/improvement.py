@@ -1012,7 +1012,7 @@ def xchart_comparison(df_list, condition, label_list, title='',linestyle='-',
 def mrchart_comparison(df_list, condition, label_list, title='mR-Chart Comparison', linestyle='-',
                      colors=['tab:blue','tab:blue'], figsize=(15,3), dpi=300):
     
-     """
+    """
     Generate and compare mR (moving range) control charts for multiple datasets.
 
     Parameters:
