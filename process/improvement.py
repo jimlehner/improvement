@@ -1,4 +1,7 @@
-# Process Improvement Python Library/process_improvement.py
+# Improvement Python Library/improvement.py
+# Version 0.2
+# Updated bar chart function to conditionally display labels
+# Added xchart_comparison and mrchart_comparison functions
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -32,6 +35,8 @@ def bar_chart(df, x_axis_data, y_axis_data, figsize=(15,5), title='', y_label='V
         Color of the bars. Default is 'tab:blue'.
     x_tick_rotation : int, optional
         Rotation angle of x-axis tick labels. Default is 0.
+    show_labels : str, optional
+        If 'On', display values for each bar in bar chart. Default is 'On'.
     show_percents : str, optional
         If 'On', display percentage labels on bars. Default is 'Off'.
     round_value : int, optional
@@ -56,18 +61,19 @@ def bar_chart(df, x_axis_data, y_axis_data, figsize=(15,5), title='', y_label='V
     for spine in ['top','right']:
         ax.spines[spine].set_visible(False)
     
-    # Add bar labels
-    for p in ax.patches:
-        label = f'{p.get_height():.{round_value}f}'
-        # Check condition and append '%' if needed
-        if (show_percents == 'On') | (show_percents == 'ON') | (show_percents == 'on'):  # Replace 'condition' with your actual condition
-            label += '%'
+    # Show bar labels
+    if (show_labels == 'On') | (show_labels == 'ON') | (show_labels == 'on'):
+        for p in ax.patches:
+            label = f'{p.get_height():.{round_value}f}'
+            # Check condition and append '%' if needed
+            if (show_percents == 'On') | (show_percents == 'ON') | (show_percents == 'on'):  # Replace 'condition' with your actual condition
+                label += '%'
 
-        ax.annotate(label, (p.get_x() + p.get_width() / 2., p.get_height()),
-                    ha='center', fontsize=12, color='black',
-                    bbox=dict(facecolor='white', alpha=1, edgecolor='black', boxstyle='round'))
+            ax.annotate(label, (p.get_x() + p.get_width() / 2., p.get_height()),
+                        ha='center', fontsize=12, color='black',
+                        bbox=dict(facecolor='white', alpha=1, edgecolor='black', boxstyle='round'))
     
-    # Conditionally show specification limit range (SLR) minimum
+    # Conditionally show target value
     if (show_target == 'On') | (show_target == 'ON'):
         ax.axhline(target, color='black', ls='--')
         # Set bbox properties
@@ -878,6 +884,246 @@ def network_analysis(df_list, condition, label_list, title='Network Analysis', r
     
     # Reorder and return the results dataframe
     new_order = ['Labels', 'Mean', 'UPL', 'LPL', 'PLR', 'AmR', 'URL', 'Characterization']
+    results_df = parameters_df[new_order]
+    
+    return results_df
+
+def xchart_comparison(df_list, condition, label_list, title='',linestyle='-',
+                     colors=['tab:blue','tab:blue'], figsize=(15,3), dpi=300):
+    
+    """
+    Generate and compare X-bar and mR control charts for multiple datasets.
+
+    Parameters:
+    -----------
+    df_list : list of pandas DataFrames
+        List of DataFrames containing data for comparison.
+    condition : str
+        Column name in the DataFrames representing the data to be analyzed.
+    label_list : list of str
+        List of labels corresponding to each DataFrame in df_list.
+    title : str, optional
+        Title for the plot (default is '').
+    linestyle : str, optional
+        Linestyle for plotting data (default is '-').
+    colors : list of str, optional
+        List of colors for plotting data, alternating for different datasets (default is ['tab:blue', 'tab:blue']).
+    figsize : tuple, optional
+        Figure size (width, height) in inches (default is (15,3)).
+    dpi : int, optional
+        Dots per inch for figure resolution (default is 300).
+
+    Returns:
+    --------
+    results_df : pandas DataFrame
+        DataFrame containing the statistical parameters and characterization results for each dataset.
+
+    Notes:
+    ------
+    - Constants C1 and C2 are predefined for control limits calculation.
+    - Calculates statistical parameters like Mean, AmR, UPL, LPL, URL for each dataset.
+    - Determines predictability of each dataset based on control limits.
+    - Plots individual values, mean, and control limits for each dataset on separate subplots.
+    - Adjusts subplot spacing and styling for better visualization.
+
+    Example Usage:
+    --------------
+    # Assuming df_list and label_list are predefined
+    results = xchart_comparison(df_list, 'data_column', label_list, title='Comparison of X-bar and mR Control Charts')
+    """
+    
+    # Constants for control limits
+    C1 = 2.660
+    C2 = 3.268
+    
+    color = colors
+    
+    # Calculate statistics
+    stats = [
+        (
+            df[condition].mean(),
+            abs(df[condition].diff()).mean(),
+            df[condition].mean() + C1 * abs(df[condition].diff()).mean(),
+            df[condition].mean() - C1 * abs(df[condition].diff()).mean(),
+            C2 * abs(df[condition].diff()).mean()
+        )
+        for df in df_list
+    ]
+    
+    # Create results dataframe
+    parameters_df = pd.DataFrame(stats, columns=['Mean', 'AmR', 'UPL', 'LPL', 'URL'])
+    parameters_df['Labels'] = label_list
+    parameters_df['PLR'] = parameters_df['UPL'] - parameters_df['LPL']
+    parameters_df['data'] = [df[condition] for df in df_list]
+    parameters_df['mR'] = [abs(df[condition].diff()) for df in df_list]
+    
+    # Determine predictability
+    parameters_df['Characterization'] = parameters_df.apply(
+        lambda row: 'Predictable' if all(row['LPL'] <= x <= row['UPL'] for x in row['data']) else 'Unpredictable',
+        axis=1
+    )
+    
+    # Plotting
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=figsize, sharey=True, dpi=dpi)
+    plt.subplots_adjust(wspace=0)
+    plt.suptitle(title, fontsize=14, y=1.05)
+
+    axes = axes.flatten() if isinstance(axes, np.ndarray) else [axes]
+
+    for idx, (data, UPL, LPL, label, ax) in enumerate(zip(
+            parameters_df['data'], parameters_df['UPL'], parameters_df['LPL'], parameters_df['Labels'], axes)):
+        
+        # Plot data
+        ax.plot(data, marker='o', ls=linestyle, color=color[idx % len(color)])
+
+        # Masking and plotting limits
+        ax.plot(np.ma.masked_where(data < UPL, data), marker='o', ls='none', color='red', markeredgecolor='black', markersize=9)
+        ax.plot(np.ma.masked_where(data > LPL, data), marker='o', ls='none', color='red', markeredgecolor='black', markersize=9)
+
+        # Plotting lines for mean, UPL, and LPL
+        mean = np.mean(data)
+        ax.axhline(mean, ls='--', color='black')
+        ax.axhline(UPL, ls='--', color='red')
+        ax.axhline(LPL, ls='--', color='red')
+        
+        # Styling axes
+        ax.grid(False)
+        # Set title
+        ax.set_title(label, fontsize=12)
+        for spine in ['top', 'right']:
+            ax.spines[spine].set_visible(False)
+        ax.spines[['left','bottom']].set_alpha(0.5)
+        ax.tick_params(axis='y', which='both', length=0)
+        ax.tick_params(axis='x', which='both')#, length=1)
+        
+        # Add y-label only to the first plot
+        if idx == 0:
+            ax.set_ylabel('Individual Values', fontsize=12)
+
+    # Show figure 
+    plt.show()
+    
+    # Reorder and return the results dataframe
+    new_order = ['Labels', 'Mean', 'UPL', 'LPL', 'PLR', 'AmR', 'URL', 'Characterization']
+    results_df = parameters_df[new_order]
+    
+    return results_df
+
+def mrchart_comparison(df_list, condition, label_list, title='mR-Chart Comparison', linestyle='-',
+                     colors=['tab:blue','tab:blue'], figsize=(15,3), dpi=300):
+    
+     """
+    Generate and compare mR (moving range) control charts for multiple datasets.
+
+    Parameters:
+    -----------
+    df_list : list of pandas DataFrames
+        List of DataFrames containing data for comparison.
+    condition : str
+        Column name in the DataFrames representing the data to be analyzed.
+    label_list : list of str
+        List of labels corresponding to each DataFrame in df_list.
+    title : str, optional
+        Title for the plot (default is 'mR-Chart Comparison').
+    linestyle : str, optional
+        Linestyle for plotting data (default is '-').
+    colors : list of str, optional
+        List of colors for plotting data, alternating for different datasets (default is ['tab:blue', 'tab:blue']).
+    figsize : tuple, optional
+        Figure size (width, height) in inches (default is (15,3)).
+    dpi : int, optional
+        Dots per inch for figure resolution (default is 300).
+
+    Returns:
+    --------
+    results_df : pandas DataFrame
+        DataFrame containing the statistical parameters and characterization results for each dataset.
+
+    Notes:
+    ------
+    - Constants C1 and C2 are predefined for control limits calculation.
+    - Calculates statistical parameters like Mean moving range (AmR), Upper Range Limit (URL) for each dataset.
+    - Determines predictability of each dataset based on control limits.
+    - Plots moving range values, mean moving range, and control limits for each dataset on separate subplots.
+    - Adjusts subplot spacing and styling for better visualization.
+
+    Example Usage:
+    --------------
+    # Assuming df_list and label_list are predefined
+    results = mrchart_comparison(df_list, 'data_column', label_list, title='Comparison of mR Control Charts')
+    """
+        
+    # Constants for control limits
+    C1 = 2.660
+    C2 = 3.268
+    
+    color = colors
+    
+    # Calculate statistics
+    stats = [
+        (
+            df[condition].mean(),
+            abs(df[condition].diff()).mean(),
+            df[condition].mean() + C1 * abs(df[condition].diff()).mean(),
+            df[condition].mean() - C1 * abs(df[condition].diff()).mean(),
+            C2 * abs(df[condition].diff()).mean()
+        )
+        for df in df_list
+    ]
+    
+    # Create results dataframe
+    parameters_df = pd.DataFrame(stats, columns=['Mean', 'AmR', 'UPL', 'LPL', 'URL'])
+    parameters_df['Labels'] = label_list
+    parameters_df['PLR'] = parameters_df['UPL'] - parameters_df['LPL']
+    parameters_df['data'] = [df[condition] for df in df_list]
+    parameters_df['mRs'] = [abs(df[condition].diff()) for df in df_list]
+    
+    # Determine predictability
+    parameters_df['Characterization'] = parameters_df.apply(
+        lambda row: 'Predictable' if all(row['URL'] < x  for x in row['mRs']) else 'Unpredictable',
+        axis=1
+    )
+    
+    # Plotting
+    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=figsize, sharey=True, dpi=dpi)
+    plt.subplots_adjust(wspace=0)
+    plt.suptitle(title, fontsize=14, y=1.05)
+
+    axes = axes.flatten() if isinstance(axes, np.ndarray) else [axes]
+
+    for idx, (mRs, URL, label, ax) in enumerate(zip(
+            parameters_df['mRs'], parameters_df['URL'], parameters_df['Labels'], axes)):
+        
+        # Plot data
+        ax.plot(mRs, marker='o', ls=linestyle, color=color[idx % len(color)])
+
+        # Masking and plotting limits correctly
+        ax.plot(np.ma.masked_where(mRs < URL, mRs), marker='o', ls='none', color='red', markeredgecolor='black', markersize=9)
+        
+        # Plotting lines for average moving range and URL 
+        AmR = np.mean(mRs)
+        ax.axhline(AmR, ls='--', color='black')
+        ax.axhline(URL, ls='--', color='red')
+        
+        # Styling axes
+        ax.grid(False)
+        # Set title
+        ax.set_title(label, fontsize=12)
+        for spine in ['top', 'right']:
+            ax.spines[spine].set_visible(False)
+        ax.spines[['left','bottom']].set_alpha(0.5)
+        ax.tick_params(axis='y', which='both', length=0)
+        ax.tick_params(axis='x', which='both')#, length=1)
+        
+        # Add y-label only to the first plot
+        if idx == 0:
+            ax.set_ylabel('Moving Range', fontsize=12)
+
+    # Show figure 
+    plt.show()
+    
+    # Reorder and return the results dataframe
+    new_order = ['Labels', 'AmR', 'URL', 'Characterization']
     results_df = parameters_df[new_order]
     
     return results_df
