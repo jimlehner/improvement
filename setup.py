@@ -8,7 +8,7 @@ with open('README.md', 'r', encoding='utf-8') as f:
 
 setup(
     name='improvement',
-    version='0.1',
+    version='0.2',
     packages=find_packages(),
     description='A custom library of functions used in manufacturing and business process improvement',
     long_description=long_description,
