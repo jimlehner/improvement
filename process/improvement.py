@@ -419,7 +419,7 @@ def x_chart(df, values, x_labels, title='X-chart', y_label='Individual Values', 
             return 'Routine Cause'
     
     # Apply variation_conditions
-    df['X-Chart Variation'] = df['Last Year'].apply(xchart_variation)
+    df['X-Chart Variation'] = df[values].apply(xchart_variation)
     
     # Create list of PBC paramters
     chart_type = ['X-Chart']*4
