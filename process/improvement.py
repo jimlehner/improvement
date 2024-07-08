@@ -715,7 +715,7 @@ def PBC(df, values, x_labels, xchart_title='X-chart', mrchart_title='mR-chart', 
             return 'Routine Cause'
     
     # Apply variation_conditions
-    df['X-Chart Variation'] = df['Individual Values'].apply(xchart_variation)
+    df['X-Chart Variation'] = df['Values'].apply(xchart_variation)
     df['mR-Chart Variation'] = df['Moving Ranges'].apply(mrchart_variation)
     
     # Create list of PBC paramters
