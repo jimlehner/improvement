@@ -289,8 +289,8 @@ def limit_chart(df, values, x_labels, target, USL, LSL, title='Limit Chart', y_l
     return results_df
 
 # Create X-chart function
-def x_chart(df, values, x_labels, title='X-chart', y_label='Individual Values', x_label='', fig_size=(15,3), 
-            round_value=2, dpi=300):
+def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x_label='', fig_size=(15,3), 
+            round_value=1, dpi=300):
     
     """
     Generate an X-chart (Individual Values Chart) from the provided DataFrame.
@@ -407,7 +407,7 @@ def x_chart(df, values, x_labels, title='X-chart', y_label='Individual Values', 
     plt.xlabel(x_label,fontsize=12)
     plt.ylabel(y_label, fontsize=12)
     plt.title(title, fontsize=14)
-
+    
     # Show plot
     plt.show()
     
@@ -439,11 +439,11 @@ def x_chart(df, values, x_labels, title='X-chart', y_label='Individual Values', 
     return result_dfs
 
 # Create mR-chart function
-def mr_chart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges', x_label='', title='mR-chart', 
+def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges', x_label='', title='mR-chart', 
              round_value=2, dpi=300):
     
     """
-    Generate an mR-chart (Moving Range Chart) from the provided DataFrame.
+    Generate an mR-chart (Moving Range Chart) from the provided DataFrame. 
 
     Parameters:
     -----------
