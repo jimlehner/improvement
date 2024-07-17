@@ -565,8 +565,8 @@ def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges
     
     return result_dfs
 
-# PBC function
-def PBC(df, values, x_labels, xchart_title='X-chart', mrchart_title='mR-chart', fig_size=(15,6), round_value=2, dpi=300):
+# Process behavior chart (pbc) function
+def pbc(df, values, x_labels, xchart_title='X-chart', mrchart_title='mR-chart', fig_size=(15,6), round_value=2, dpi=300):
     
     """
     Generate an XmR-chart (X and mR-chart) from the provided DataFrame.
