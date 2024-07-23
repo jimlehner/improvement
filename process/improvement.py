@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import pandas as pd
+import warnings
 
 def bar_chart(df, x_axis_data, y_axis_data, figsize=(15,5), title='', y_label='Value', x_label='', 
               color='tab:blue', x_tick_rotation=0, show_labels='On', show_percents='Off', 
@@ -888,48 +889,60 @@ def network_analysis(df_list, condition, label_list, title='Network Analysis', r
     
     return results_df
 
-def xchart_comparison(df_list, condition, label_list, title='',linestyle='-',
-                     colors=['tab:blue','tab:blue'], figsize=(15,3), dpi=300):
+def xchart_comparison(df_list, condition, x_labels, list_of_plot_labels, title='',
+                      linestyle='-', y_label='Individual Values', 
+                      colors=['tab:blue','tab:blue'], figsize=(12,4), 
+                      dpi=300):
     
     """
-    Generate and compare X-bar and mR control charts for multiple datasets.
+    Compare X-charts for multiple datasets and plot the results with specified x-axis labels.
 
     Parameters:
     -----------
-    df_list : list of pandas DataFrames
-        List of DataFrames containing data for comparison.
+    df_list : list of pandas.DataFrame
+        A list of dataframes containing the data to be plotted.
+        
     condition : str
-        Column name in the DataFrames representing the data to be analyzed.
-    label_list : list of str
-        List of labels corresponding to each DataFrame in df_list.
+        The column name in the dataframes to be analyzed and plotted.
+        
+    x_labels : str
+        The column name in the dataframes to be used for x-axis labels.
+        
+    list_of_plot_labels : list of str
+        A list of labels for the individual plots. Should be the same length as df_list.
+        
     title : str, optional
-        Title for the plot (default is '').
+        The title of the entire plot. Default is an empty string.
+        
     linestyle : str, optional
-        Linestyle for plotting data (default is '-').
+        The line style for the plot. Default is '-' (solid line).
+        
+    y_label : str, optional
+        The label for the y-axis. Default is 'Individual Values'.
+        
     colors : list of str, optional
-        List of colors for plotting data, alternating for different datasets (default is ['tab:blue', 'tab:blue']).
-    figsize : tuple, optional
-        Figure size (width, height) in inches (default is (15,3)).
+        A list of colors for the plot lines. Default is ['tab:blue', 'tab:blue'].
+        
+    figsize : tuple of int, optional
+        The size of the figure. Default is (12, 4).
+        
     dpi : int, optional
-        Dots per inch for figure resolution (default is 300).
-
+        The resolution of the figure in dots per inch. Default is 300.
+    
     Returns:
     --------
-    results_df : pandas DataFrame
-        DataFrame containing the statistical parameters and characterization results for each dataset.
-
+    pandas.DataFrame
+        A dataframe containing calculated statistics and characterization for each input dataframe.
+    
     Notes:
     ------
-    - Constants C1 and C2 are predefined for control limits calculation.
-    - Calculates statistical parameters like Mean, AmR, UPL, LPL, URL for each dataset.
-    - Determines predictability of each dataset based on control limits.
-    - Plots individual values, mean, and control limits for each dataset on separate subplots.
-    - Adjusts subplot spacing and styling for better visualization.
-
+    This function plots the X-charts with the mean, upper and lower control limits.
+    It masks and highlights the points that fall outside these limits.
+    
     Example Usage:
     --------------
     # Assuming df_list and label_list are predefined
-    results = xchart_comparison(df_list, 'data_column', label_list, title='Comparison of X-bar and mR Control Charts')
+    results = xchart_comparison(df_list, 'data_column', 'x_column', label_list, title='Comparison of X Control Charts')
     """
     
     # Constants for control limits
@@ -944,15 +957,18 @@ def xchart_comparison(df_list, condition, label_list, title='',linestyle='-',
             df[condition].mean(),
             abs(df[condition].diff()).mean(),
             df[condition].mean() + C1 * abs(df[condition].diff()).mean(),
-            df[condition].mean() - C1 * abs(df[condition].diff()).mean(),
+            max(df[condition].mean() - C1 * abs(df[condition].diff()).mean(),0),
             C2 * abs(df[condition].diff()).mean()
         )
         for df in df_list
     ]
     
+    # Isolate column to be used for x_labels
+    x_labels_for_plots = [df[x_labels] for df in df_list]
+    
     # Create results dataframe
     parameters_df = pd.DataFrame(stats, columns=['Mean', 'AmR', 'UPL', 'LPL', 'URL'])
-    parameters_df['Labels'] = label_list
+    parameters_df['Labels'] = list_of_plot_labels
     parameters_df['PLR'] = parameters_df['UPL'] - parameters_df['LPL']
     parameters_df['data'] = [df[condition] for df in df_list]
     parameters_df['mR'] = [abs(df[condition].diff()) for df in df_list]
@@ -970,8 +986,13 @@ def xchart_comparison(df_list, condition, label_list, title='',linestyle='-',
 
     axes = axes.flatten() if isinstance(axes, np.ndarray) else [axes]
 
-    for idx, (data, UPL, LPL, label, ax) in enumerate(zip(
-            parameters_df['data'], parameters_df['UPL'], parameters_df['LPL'], parameters_df['Labels'], axes)):
+    for idx, (data, UPL, LPL, label, ax, x_labels) in enumerate(zip(
+            parameters_df['data'], 
+            parameters_df['UPL'], 
+            parameters_df['LPL'], 
+            parameters_df['Labels'], 
+            axes,
+            x_labels_for_plots)):
         
         # Plot data
         ax.plot(data, marker='o', ls=linestyle, color=color[idx % len(color)])
@@ -998,7 +1019,12 @@ def xchart_comparison(df_list, condition, label_list, title='',linestyle='-',
         
         # Add y-label only to the first plot
         if idx == 0:
-            ax.set_ylabel('Individual Values', fontsize=12)
+            ax.set_ylabel(y_label, fontsize=12)
+            
+        # Set the x-tick labels
+        tick_positions = np.arange(0, len(data), 10)
+        ax.set_xticks(tick_positions)
+        ax.set_xticklabels(x_labels[tick_positions], rotation=0, ha='center')
 
     # Show figure 
     plt.show()
@@ -1009,10 +1035,10 @@ def xchart_comparison(df_list, condition, label_list, title='',linestyle='-',
     
     return results_df
 
-def mrchart_comparison(df_list, condition, label_list, title='mR-Chart Comparison', linestyle='-',
+def mrchart_comparison(df_list, condition, x_labels, list_of_plot_labels, title='mR-Chart Comparison', linestyle='-',
                      colors=['tab:blue','tab:blue'], figsize=(15,3), dpi=300):
     
-    """
+   """
     Generate and compare mR (moving range) control charts for multiple datasets.
 
     Parameters:
@@ -1021,7 +1047,9 @@ def mrchart_comparison(df_list, condition, label_list, title='mR-Chart Compariso
         List of DataFrames containing data for comparison.
     condition : str
         Column name in the DataFrames representing the data to be analyzed.
-    label_list : list of str
+    x_labels : str
+        Column name in the DataFrames representing the labels for the x-axis.
+    list_of_plot_labels : list of str
         List of labels corresponding to each DataFrame in df_list.
     title : str, optional
         Title for the plot (default is 'mR-Chart Comparison').
@@ -1050,7 +1078,7 @@ def mrchart_comparison(df_list, condition, label_list, title='mR-Chart Compariso
     Example Usage:
     --------------
     # Assuming df_list and label_list are predefined
-    results = mrchart_comparison(df_list, 'data_column', label_list, title='Comparison of mR Control Charts')
+    results = mrchart_comparison(df_list, 'data_column', 'x_column', label_list, title='Comparison of mR Control Charts')
     """
         
     # Constants for control limits
@@ -1071,9 +1099,12 @@ def mrchart_comparison(df_list, condition, label_list, title='mR-Chart Compariso
         for df in df_list
     ]
     
+    # Isolate column to be used for x_labels
+    x_labels_for_plots = [df[x_labels] for df in df_list]
+    
     # Create results dataframe
     parameters_df = pd.DataFrame(stats, columns=['Mean', 'AmR', 'UPL', 'LPL', 'URL'])
-    parameters_df['Labels'] = label_list
+    parameters_df['Labels'] = list_of_plot_labels
     parameters_df['PLR'] = parameters_df['UPL'] - parameters_df['LPL']
     parameters_df['data'] = [df[condition] for df in df_list]
     parameters_df['mRs'] = [abs(df[condition].diff()) for df in df_list]
@@ -1091,8 +1122,12 @@ def mrchart_comparison(df_list, condition, label_list, title='mR-Chart Compariso
 
     axes = axes.flatten() if isinstance(axes, np.ndarray) else [axes]
 
-    for idx, (mRs, URL, label, ax) in enumerate(zip(
-            parameters_df['mRs'], parameters_df['URL'], parameters_df['Labels'], axes)):
+    for idx, (mRs, URL, label, ax, x_labels) in enumerate(zip(
+            parameters_df['mRs'], 
+            parameters_df['URL'], 
+            parameters_df['Labels'], 
+            axes,
+            x_labels_for_plots)):
         
         # Plot data
         ax.plot(mRs, marker='o', ls=linestyle, color=color[idx % len(color)])
@@ -1118,7 +1153,14 @@ def mrchart_comparison(df_list, condition, label_list, title='mR-Chart Compariso
         # Add y-label only to the first plot
         if idx == 0:
             ax.set_ylabel('Moving Range', fontsize=12)
-
+        
+        # Suppress the FixedFormatter warning
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            tick_positions = np.arange(0, len(mRs), 10)
+            ax.set_xticks(tick_positions)
+            ax.set_xticklabels(x_labels[tick_positions], rotation=0, ha='center')
+            
     # Show figure 
     plt.show()
     
