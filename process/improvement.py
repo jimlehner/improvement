@@ -740,7 +740,7 @@ def pbc(df, values, x_labels, xchart_title='X-chart', mrchart_title='mR-chart', 
 # Improved network analysis function
 def network_analysis(df_list, condition, label_list, title='Network Analysis', rows=1, 
                      cols=2, linestyle='-', xticks=False, hide_last='Off', color=None,
-                     figsize=(15,10), dpi=300):
+                     round_value=3, figsize=(15,10), dpi=300):
     
     """
     Perform network analysis on a list of DataFrames, plotting control charts and returning statistical summaries.
@@ -823,8 +823,8 @@ def network_analysis(df_list, condition, label_list, title='Network Analysis', r
         (
             df[condition].mean(),
             abs(df[condition].diff()).mean(),
-            df[condition].mean() + C1 * abs(df[condition].diff()).mean(),
-            df[condition].mean() - C1 * abs(df[condition].diff()).mean(),
+            max(df[condition].mean() + C1 * abs(df[condition].diff()).mean(),0),
+            max(df[condition].mean() - C1 * abs(df[condition].diff()).mean(),0),
             C2 * abs(df[condition].diff()).mean()
         )
         for df in df_list
@@ -837,7 +837,7 @@ def network_analysis(df_list, condition, label_list, title='Network Analysis', r
     parameters_df['data'] = [df[condition] for df in df_list]
     parameters_df['mR'] = [df[condition].diff() for df in df_list]
     
-    # Determine predictability
+    # Determine characterization
     parameters_df['Characterization'] = parameters_df.apply(
         lambda row: 'Predictable' if all(row['LPL'] <= x <= row['UPL'] for x in row['data']) else 'Unpredictable',
         axis=1
@@ -859,7 +859,12 @@ def network_analysis(df_list, condition, label_list, title='Network Analysis', r
         # Masking and plotting limits
         ax.plot(np.ma.masked_where(data < UPL, data), marker='o', ls='none', color='red', markeredgecolor='black', markersize=9)
         ax.plot(np.ma.masked_where(data > LPL, data), marker='o', ls='none', color='red', markeredgecolor='black', markersize=9)
-
+#         ax.plot(np.ma.masked_where(data == 0, data), marker='o', ls='none', color='red', markeredgecolor='black', markersize=9)
+        
+        # Highlight points where the data is zero in red
+        zero_indices = (data == 0)
+        ax.plot(np.where(zero_indices)[0], data[zero_indices], marker='o', ls='none', color='red', markeredgecolor='black', markersize=9)
+    
         # Plotting lines for mean, UPL, and LPL
         mean = np.mean(data)
         ax.axhline(mean, ls='--', color='black')
@@ -873,6 +878,7 @@ def network_analysis(df_list, condition, label_list, title='Network Analysis', r
             ax.spines[spine].set_visible(False)
         ax.spines['left'].set_alpha(0.5)
         ax.tick_params(axis='both', which='both', length=0)
+        
         if not xticks:
             ax.set_xticks([])
 
