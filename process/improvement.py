@@ -1086,7 +1086,7 @@ def mrchart_comparison(df_list, condition, x_labels, list_of_plot_labels, title=
     # Assuming df_list and label_list are predefined
     results = mrchart_comparison(df_list, 'data_column', 'x_column', label_list, title='Comparison of mR Control Charts')
     """
-        
+    
     # Constants for control limits
     C1 = 2.660
     C2 = 3.268
