@@ -1043,49 +1043,48 @@ def xchart_comparison(df_list, condition, x_labels, list_of_plot_labels, title='
 
 def mrchart_comparison(df_list, condition, x_labels, list_of_plot_labels, title='mR-Chart Comparison', linestyle='-',
                      colors=['tab:blue','tab:blue'], figsize=(15,3), dpi=300):
-    
-   """
-    Generate and compare mR (moving range) control charts for multiple datasets.
+ """
+  Generate and compare mR (moving range) control charts for multiple datasets.
 
-    Parameters:
-    -----------
-    df_list : list of pandas DataFrames
-        List of DataFrames containing data for comparison.
-    condition : str
-        Column name in the DataFrames representing the data to be analyzed.
-    x_labels : str
-        Column name in the DataFrames representing the labels for the x-axis.
-    list_of_plot_labels : list of str
-        List of labels corresponding to each DataFrame in df_list.
-    title : str, optional
-        Title for the plot (default is 'mR-Chart Comparison').
-    linestyle : str, optional
-        Linestyle for plotting data (default is '-').
-    colors : list of str, optional
-        List of colors for plotting data, alternating for different datasets (default is ['tab:blue', 'tab:blue']).
-    figsize : tuple, optional
-        Figure size (width, height) in inches (default is (15,3)).
-    dpi : int, optional
-        Dots per inch for figure resolution (default is 300).
+  Parameters:
+  -----------
+  df_list : list of pandas DataFrames
+      List of DataFrames containing data for comparison.
+  condition : str
+      Column name in the DataFrames representing the data to be analyzed.
+  x_labels : str
+      Column name in the DataFrames representing the labels for the x-axis.
+  list_of_plot_labels : list of str
+      List of labels corresponding to each DataFrame in df_list.
+  title : str, optional
+      Title for the plot (default is 'mR-Chart Comparison').
+  linestyle : str, optional
+      Linestyle for plotting data (default is '-').
+  colors : list of str, optional
+      List of colors for plotting data, alternating for different datasets (default is ['tab:blue', 'tab:blue']).
+  figsize : tuple, optional
+      Figure size (width, height) in inches (default is (15,3)).
+  dpi : int, optional
+      Dots per inch for figure resolution (default is 300).
 
-    Returns:
-    --------
-    results_df : pandas DataFrame
-        DataFrame containing the statistical parameters and characterization results for each dataset.
+  Returns:
+  --------
+  results_df : pandas DataFrame
+      DataFrame containing the statistical parameters and characterization results for each dataset.
 
-    Notes:
-    ------
-    - Constants C1 and C2 are predefined for control limits calculation.
-    - Calculates statistical parameters like Mean moving range (AmR), Upper Range Limit (URL) for each dataset.
-    - Determines predictability of each dataset based on control limits.
-    - Plots moving range values, mean moving range, and control limits for each dataset on separate subplots.
-    - Adjusts subplot spacing and styling for better visualization.
+  Notes:
+  ------
+  - Constants C1 and C2 are predefined for control limits calculation.
+  - Calculates statistical parameters like Mean moving range (AmR), Upper Range Limit (URL) for each dataset.
+  - Determines predictability of each dataset based on control limits.
+  - Plots moving range values, mean moving range, and control limits for each dataset on separate subplots.
+  - Adjusts subplot spacing and styling for better visualization.
 
-    Example Usage:
-    --------------
-    # Assuming df_list and label_list are predefined
-    results = mrchart_comparison(df_list, 'data_column', 'x_column', label_list, title='Comparison of mR Control Charts')
-    """
+  Example Usage:
+  --------------
+  # Assuming df_list and label_list are predefined
+  results = mrchart_comparison(df_list, 'data_column', 'x_column', label_list, title='Comparison of mR Control Charts')
+  """
     
     # Constants for control limits
     C1 = 2.660
