@@ -1177,3 +1177,72 @@ def mrchart_comparison(df_list, condition, x_labels, list_of_plot_labels,
     results_df = parameters_df[new_order]
     
     return results_df
+
+# Function for calculating box plot features (5-number summary and outliers)
+def boxplotfeatures(df, column, round_value=2):
+    
+    """
+    Calculate key features of a box plot for a specific column in a DataFrame.
+
+    This function calculates the median, first quartile (Q1), third quartile (Q3), 
+    interquartile range (IQR), and the upper and lower bounds of a specified column 
+    in a DataFrame. It also identifies outliers based on the calculated bounds.
+
+    Parameters:
+    -----------
+    df : pandas.DataFrame
+        The DataFrame containing the data.
+        
+    column : str
+        The name of the column in `df` for which to calculate the box plot features.
+        
+    round_value : int, optional (default=2)
+        The number of decimal places to round the calculated values to.
+
+    Returns:
+    --------
+    results_df : pandas.DataFrame
+        A DataFrame containing the calculated box plot features:
+        - 'Median': The median of the data.
+        - 'Q1': The 25th percentile of the data.
+        - 'Q3': The 75th percentile of the data.
+        - 'IQR': The interquartile range (Q3 - Q1).
+        - 'Lower bound': The largest value that is greater than or equal to Q1 - 1.5*IQR.
+        - 'Upper bound': The largest value in the data that is less than Q3 + 1.5*IQR.
+    
+    outliers : pandas.DataFrame
+        A DataFrame containing the rows in `df` where the values in the specified column 
+        are considered outliers, i.e., values below the lower bound or above the upper bound.
+    """
+    
+    # Specify multiplier to 1.5
+    multiplier = 1.5
+    
+    # Calculate median
+    median = df[column].median()
+    
+    # Calculate Q1 (25th percentile) and Q3 (75th percentile)
+    Q1 = df[column].quantile(0.25)
+    Q3 = df[column].quantile(0.75)
+    
+    # Calculate the IQR
+    IQR = Q3 - Q1
+    
+    # Calculate the upper and lower bounds
+    lower_bound = max(Q1 - multiplier*IQR, min(df[column]))
+    upper_bound = max(df[column][df[column] < Q3 + multiplier * IQR])
+    
+    # Identify outliers
+    outliers = df[(df[column] < lower_bound) | (df[column] > upper_bound)]
+    
+    # Create results DataFrame
+    results_df = pd.DataFrame({
+        'Feature': ['Median', 'Q1', 'Q3', 'IQR', 'Lower bound', 'Upper bound'],
+        'Value': [median, Q1, Q3, IQR, lower_bound, upper_bound]
+    }).round(round_value)
+    
+    # Return "No outliers" if outliers DataFrame is empty
+    if outliers.empty:
+        return results_df, "No outliers"
+    else:
+        return results_df, outliers
