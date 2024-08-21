@@ -290,8 +290,8 @@ def limit_chart(df, values, x_labels, target, USL, LSL, title='Limit Chart', y_l
     return results_df
 
 # Create X-chart function
-def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x_label='', fig_size=(15,3), 
-            round_value=1, dpi=300):
+def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x_label='', tickinterval=4,
+           fig_size=(15,3), tickinterval=5, round_value=1, dpi=300):
     
     """
     Generate an X-chart (Individual Values Chart) from the provided DataFrame.
@@ -310,6 +310,8 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x
         Label for the y-axis, default is 'Individual Values'.
     x_label : str, optional
         Label for the x-axis, default is an empty string.
+    tickinterval : int, optional
+        Specify the distance between x-ticks
     fig_size : tuple, optional
         Figure size in inches (width, height), default is (15, 3).
     round_value : int, optional
@@ -403,6 +405,12 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x
     # Specify spine visibility 
     ax.spines[['top','right']].set_visible(False)
     ax.spines[['left','bottom']].set_alpha(0.5)
+    
+    # Set the x-tick labels with increased intervals
+    tick_interval = tickinterval  # Increase this value to increase the spacing between ticks
+    tick_positions = np.arange(0, len(labels), tick_interval)
+    ax.set_xticks(tick_positions+1)
+    ax.set_xticklabels(labels.iloc[tick_positions], rotation=0, ha='center') 
 
     # Specify axis labels and title
     plt.xlabel(x_label,fontsize=12)
@@ -411,6 +419,33 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x
     
     # Show plot
     plt.show()
+    
+    # Create functions for labeling types of variation 
+    def xchart_variation(value):
+        if (value > UPL) | (value < LPL):
+            return 'Assignable Cause'
+        else:
+            return 'Routine Cause'
+    
+    # Apply variation_conditions
+    df['X-Chart Variation'] = df[values].apply(xchart_variation)
+    
+    # Create list of PBC paramters
+    chart_type = ['X-Chart']*4
+    xchart_params = ['Mean','UPL','LPL','PLR']
+    xchart_values = [mean,UPL,LPL,PLR]
+    # Create df for PBC parameters
+    PBC_params_df = pd.DataFrame()
+    PBC_params_df['Chart'] = pd.Series(chart_type)
+    PBC_params_df['Parameters'] = pd.Series(xchart_params)
+    PBC_params_df['Values'] = pd.Series(xchart_values)
+    
+    # Create dictionary of dfs
+    result_dfs = {'PBC Params':PBC_params_df, 
+                  'X-Chart Dataframe':df
+                 }
+    
+    return result_dfs
     
     # Create functions for labeling types of variation 
     def xchart_variation(value):
