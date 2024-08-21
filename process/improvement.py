@@ -290,7 +290,7 @@ def limit_chart(df, values, x_labels, target, USL, LSL, title='Limit Chart', y_l
     return results_df
 
 # Create X-chart function
-def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x_label='', tickinterval=4,
+def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x_label='',
            fig_size=(15,3), tickinterval=5, round_value=1, dpi=300):
     
     """
