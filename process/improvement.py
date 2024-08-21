@@ -896,7 +896,7 @@ def network_analysis(df_list, condition, label_list, title='Network Analysis', r
     return results_df
 
 def xchart_comparison(df_list, condition, x_labels, list_of_plot_labels, title='',
-                      linestyle='-', y_label='Individual Values', 
+                      linestyle='-', y_label='Individual Values', tickinterval=5,
                       colors=['tab:blue','tab:blue'], figsize=(12,4), 
                       dpi=300):
     
@@ -906,49 +906,64 @@ def xchart_comparison(df_list, condition, x_labels, list_of_plot_labels, title='
     Parameters:
     -----------
     df_list : list of pandas.DataFrame
-        A list of dataframes containing the data to be plotted.
+        A list of DataFrames containing the data to be plotted. Each DataFrame represents a different dataset.
         
     condition : str
-        The column name in the dataframes to be analyzed and plotted.
+        The column name in each DataFrame to be analyzed and plotted on the X-chart.
         
     x_labels : str
-        The column name in the dataframes to be used for x-axis labels.
+        The column name in each DataFrame to be used for x-axis labels (e.g., time or index).
         
     list_of_plot_labels : list of str
-        A list of labels for the individual plots. Should be the same length as df_list.
+        A list of labels for each individual plot, used as titles for the subplots. 
+        The list should be the same length as df_list.
         
     title : str, optional
-        The title of the entire plot. Default is an empty string.
+        The overall title of the entire plot. Default is an empty string.
         
     linestyle : str, optional
-        The line style for the plot. Default is '-' (solid line).
+        The line style for the plot lines (e.g., '-', '--', '-.', ':'). Default is '-' (solid line).
         
     y_label : str, optional
         The label for the y-axis. Default is 'Individual Values'.
+        
+    tickinterval : int, optional
+        The interval at which x-ticks are placed on the x-axis. Default is 5.
         
     colors : list of str, optional
         A list of colors for the plot lines. Default is ['tab:blue', 'tab:blue'].
         
     figsize : tuple of int, optional
-        The size of the figure. Default is (12, 4).
+        The size of the figure in inches. Default is (12, 4).
         
     dpi : int, optional
         The resolution of the figure in dots per inch. Default is 300.
-    
+
     Returns:
     --------
     pandas.DataFrame
-        A dataframe containing calculated statistics and characterization for each input dataframe.
-    
+        A DataFrame containing calculated statistics and characterizations for each input DataFrame, 
+        including the mean, average moving range (AmR), upper and lower control limits (UPL, LPL), 
+        process limit range (PLR), upper range limit (URL), and whether the data is predictable or unpredictable.
+
     Notes:
     ------
-    This function plots the X-charts with the mean, upper and lower control limits.
-    It masks and highlights the points that fall outside these limits.
-    
+    - This function generates X-charts (control charts) for each DataFrame in df_list, 
+      displaying individual values with their respective control limits.
+    - The function automatically determines whether the process is predictable or unpredictable 
+      based on whether all data points fall within the control limits.
+    - The x-ticks are customized based on the provided tick interval, which controls the spacing between ticks.
+
     Example Usage:
     --------------
     # Assuming df_list and label_list are predefined
-    results = xchart_comparison(df_list, 'data_column', 'x_column', label_list, title='Comparison of X Control Charts')
+    results = xchart_comparison(
+        df_list=df_list, 
+        condition='data_column', 
+        x_labels='x_column', 
+        list_of_plot_labels=label_list, 
+        title='Comparison of X Control Charts'
+    )
     """
     
     # Constants for control limits
@@ -993,13 +1008,13 @@ def xchart_comparison(df_list, condition, x_labels, list_of_plot_labels, title='
     axes = axes.flatten() if isinstance(axes, np.ndarray) else [axes]
 
     for idx, (data, UPL, LPL, label, ax, x_labels) in enumerate(zip(
-            parameters_df['data'], 
-            parameters_df['UPL'], 
-            parameters_df['LPL'], 
-            parameters_df['Labels'], 
-            axes,
-            x_labels_for_plots)):
-        
+        parameters_df['data'], 
+        parameters_df['UPL'], 
+        parameters_df['LPL'], 
+        parameters_df['Labels'], 
+        axes,
+        x_labels_for_plots)):
+    
         # Plot data
         ax.plot(data, marker='o', ls=linestyle, color=color[idx % len(color)])
 
@@ -1012,23 +1027,23 @@ def xchart_comparison(df_list, condition, x_labels, list_of_plot_labels, title='
         ax.axhline(mean, ls='--', color='black')
         ax.axhline(UPL, ls='--', color='red')
         ax.axhline(LPL, ls='--', color='red')
-        
+
         # Styling axes
         ax.grid(False)
-        # Set title
         ax.set_title(label, fontsize=12)
         for spine in ['top', 'right']:
             ax.spines[spine].set_visible(False)
         ax.spines[['left','bottom']].set_alpha(0.5)
         ax.tick_params(axis='y', which='both', length=0)
-        ax.tick_params(axis='x', which='both')#, length=1)
-        
+        ax.tick_params(axis='x', which='both')
+
         # Add y-label only to the first plot
         if idx == 0:
             ax.set_ylabel(y_label, fontsize=12)
-            
-        # Set the x-tick labels
-        tick_positions = np.arange(0, len(data), 10)
+
+        # Set the x-tick labels with increased intervals
+        tick_interval = tickinterval  # Increase this value to increase the spacing between ticks
+        tick_positions = np.arange(0, len(data), tick_interval)
         ax.set_xticks(tick_positions)
         ax.set_xticklabels(x_labels[tick_positions], rotation=0, ha='center')
 
@@ -1246,164 +1261,3 @@ def boxplotfeatures(df, column, round_value=2):
         return results_df, "No outliers"
     else:
         return results_df, outliers
-
-def xchart_comparison_alt(df_list, condition, x_labels, list_of_plot_labels, title='',
-                      linestyle='-', y_label='Individual Values', tickinterval=5,
-                      colors=['tab:blue','tab:blue'], figsize=(12,4), 
-                      dpi=300):
-    
-    """
-    Compare X-charts for multiple datasets and plot the results with specified x-axis labels.
-
-    Parameters:
-    -----------
-    df_list : list of pandas.DataFrame
-        A list of DataFrames containing the data to be plotted. Each DataFrame represents a different dataset.
-        
-    condition : str
-        The column name in each DataFrame to be analyzed and plotted on the X-chart.
-        
-    x_labels : str
-        The column name in each DataFrame to be used for x-axis labels (e.g., time or index).
-        
-    list_of_plot_labels : list of str
-        A list of labels for each individual plot, used as titles for the subplots. 
-        The list should be the same length as df_list.
-        
-    title : str, optional
-        The overall title of the entire plot. Default is an empty string.
-        
-    linestyle : str, optional
-        The line style for the plot lines (e.g., '-', '--', '-.', ':'). Default is '-' (solid line).
-        
-    y_label : str, optional
-        The label for the y-axis. Default is 'Individual Values'.
-        
-    tickinterval : int, optional
-        The interval at which x-ticks are placed on the x-axis. Default is 5.
-        
-    colors : list of str, optional
-        A list of colors for the plot lines. Default is ['tab:blue', 'tab:blue'].
-        
-    figsize : tuple of int, optional
-        The size of the figure in inches. Default is (12, 4).
-        
-    dpi : int, optional
-        The resolution of the figure in dots per inch. Default is 300.
-
-    Returns:
-    --------
-    pandas.DataFrame
-        A DataFrame containing calculated statistics and characterizations for each input DataFrame, 
-        including the mean, average moving range (AmR), upper and lower control limits (UPL, LPL), 
-        process limit range (PLR), upper range limit (URL), and whether the data is predictable or unpredictable.
-
-    Notes:
-    ------
-    - This function generates X-charts (control charts) for each DataFrame in df_list, 
-      displaying individual values with their respective control limits.
-    - The function automatically determines whether the process is predictable or unpredictable 
-      based on whether all data points fall within the control limits.
-    - The x-ticks are customized based on the provided tick interval, which controls the spacing between ticks.
-
-    Example Usage:
-    --------------
-    # Assuming df_list and label_list are predefined
-    results = xchart_comparison(
-        df_list=df_list, 
-        condition='data_column', 
-        x_labels='x_column', 
-        list_of_plot_labels=label_list, 
-        title='Comparison of X Control Charts'
-    )
-    """
-    
-    # Constants for control limits
-    C1 = 2.660
-    C2 = 3.268
-    
-    color = colors
-    
-    # Calculate statistics
-    stats = [
-        (
-            df[condition].mean(),
-            abs(df[condition].diff()).mean(),
-            df[condition].mean() + C1 * abs(df[condition].diff()).mean(),
-            max(df[condition].mean() - C1 * abs(df[condition].diff()).mean(),0),
-            C2 * abs(df[condition].diff()).mean()
-        )
-        for df in df_list
-    ]
-    
-    # Isolate column to be used for x_labels
-    x_labels_for_plots = [df[x_labels] for df in df_list]
-    
-    # Create results dataframe
-    parameters_df = pd.DataFrame(stats, columns=['Mean', 'AmR', 'UPL', 'LPL', 'URL'])
-    parameters_df['Labels'] = list_of_plot_labels
-    parameters_df['PLR'] = parameters_df['UPL'] - parameters_df['LPL']
-    parameters_df['data'] = [df[condition] for df in df_list]
-    parameters_df['mR'] = [abs(df[condition].diff()) for df in df_list]
-    
-    # Determine predictability
-    parameters_df['Characterization'] = parameters_df.apply(
-        lambda row: 'Predictable' if all(row['LPL'] <= x <= row['UPL'] for x in row['data']) else 'Unpredictable',
-        axis=1
-    )
-    
-    # Plotting
-    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=figsize, sharey=True, dpi=dpi)
-    plt.subplots_adjust(wspace=0)
-    plt.suptitle(title, fontsize=14, y=1.05)
-
-    axes = axes.flatten() if isinstance(axes, np.ndarray) else [axes]
-
-    for idx, (data, UPL, LPL, label, ax, x_labels) in enumerate(zip(
-        parameters_df['data'], 
-        parameters_df['UPL'], 
-        parameters_df['LPL'], 
-        parameters_df['Labels'], 
-        axes,
-        x_labels_for_plots)):
-    
-        # Plot data
-        ax.plot(data, marker='o', ls=linestyle, color=color[idx % len(color)])
-
-        # Masking and plotting limits
-        ax.plot(np.ma.masked_where(data < UPL, data), marker='o', ls='none', color='red', markeredgecolor='black', markersize=9)
-        ax.plot(np.ma.masked_where(data > LPL, data), marker='o', ls='none', color='red', markeredgecolor='black', markersize=9)
-
-        # Plotting lines for mean, UPL, and LPL
-        mean = np.mean(data)
-        ax.axhline(mean, ls='--', color='black')
-        ax.axhline(UPL, ls='--', color='red')
-        ax.axhline(LPL, ls='--', color='red')
-
-        # Styling axes
-        ax.grid(False)
-        ax.set_title(label, fontsize=12)
-        for spine in ['top', 'right']:
-            ax.spines[spine].set_visible(False)
-        ax.spines[['left','bottom']].set_alpha(0.5)
-        ax.tick_params(axis='y', which='both', length=0)
-        ax.tick_params(axis='x', which='both')
-
-        # Add y-label only to the first plot
-        if idx == 0:
-            ax.set_ylabel(y_label, fontsize=12)
-
-        # Set the x-tick labels with increased intervals
-        tick_interval = tickinterval  # Increase this value to increase the spacing between ticks
-        tick_positions = np.arange(0, len(data), tick_interval)
-        ax.set_xticks(tick_positions)
-        ax.set_xticklabels(x_labels[tick_positions], rotation=0, ha='center')
-
-    # Show figure 
-    plt.show()
-    
-    # Reorder and return the results dataframe
-    new_order = ['Labels', 'Mean', 'UPL', 'LPL', 'PLR', 'AmR', 'URL', 'Characterization']
-    results_df = parameters_df[new_order]
-    
-    return results_df
