@@ -344,6 +344,7 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x
     labels = df[x_labels]
 
     # Add moving ranges to df as column
+    df = df.copy()
     df['Moving Ranges'] = pd.Series(moving_ranges)
     
     # Calculate the mean
