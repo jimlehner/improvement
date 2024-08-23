@@ -652,6 +652,7 @@ def pbc(df, values, x_labels, xchart_title='X-chart', mrchart_title='mR-chart', 
     labels = df[x_labels]
 
     # Add moving ranges to df as column
+    df = df.copy() # Added this line to address the issue of a value trying to be set on a copy of a slice in a df.
     df['Moving Ranges'] = pd.Series(moving_ranges)
     
     # Calculate the mean
