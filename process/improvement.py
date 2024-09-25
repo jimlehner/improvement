@@ -291,7 +291,7 @@ def limit_chart(df, values, x_labels, target, USL, LSL, title='Limit Chart', y_l
 
 # Create X-chart function
 def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x_label='',
-           fig_size=(15,3), tickinterval=5, round_value=1, dpi=300):
+           fig_size=(15,3), tickinterval=5, round_value=1, dpi=300, rotate_labels=0):
     
     """
     Generate an X-chart (Individual Values Chart) from the provided DataFrame.
@@ -412,6 +412,9 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x
     tick_positions = np.arange(0, len(labels), tick_interval)
     ax.set_xticks(tick_positions+1)
     ax.set_xticklabels(labels.iloc[tick_positions], rotation=0, ha='center') 
+
+    # Rotate xtick labels
+    plt.xticks(rotation=rotate_labels)
 
     # Specify axis labels and title
     plt.xlabel(x_label,fontsize=12)
