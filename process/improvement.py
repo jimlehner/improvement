@@ -482,7 +482,7 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x
 
 # Create mR-chart function
 def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges', x_label='', title='mR-chart', 
-             round_value=2, dpi=300):
+             tick_interval=5, rotate_labels=0, round_value=2, dpi=300):
     
     """
     Generate an mR-chart (Moving Range Chart) from the provided DataFrame. 
@@ -503,6 +503,10 @@ def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges
         Label for the x-axis, default is an empty string.
     title : str, optional
         Title for the plot, default is 'mR-chart'.
+    tick_interval : int, optional
+        Specify the distance between x-ticks
+    rotate_labels : int, optional
+        Specify the rotation of the xlabels.
     round_value : int, optional
         Number of decimal places to round calculations, default is 2.
     dpi : int, optional
@@ -567,11 +571,19 @@ def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges
     ax.text(ax.get_xlim()[1] * 1.0, URL, URL, color='red', ha='center', va='center', bbox=bbox_props)
     ax.text(ax.get_xlim()[1] * 1.0, AmR, AmR, color='black', ha='center', va='center', bbox=bbox_props_centerlines)
 
-
     # Specify spine visibility 
     ax.spines[['top','right']].set_visible(False)
     ax.spines[['left','bottom']].set_alpha(0.5)
 
+    # Set the x-tick labels with increased intervals
+    tick_interval = tickinterval  # Increase this value to increase the spacing between ticks
+    tick_positions = np.arange(0, len(labels), tick_interval)
+    ax.set_xticks(tick_positions+1)
+    ax.set_xticklabels(labels.iloc[tick_positions], rotation=0, ha='center') 
+
+    # Rotate xtick labels
+    plt.xticks(rotation=rotate_labels)
+               
     # Specify axis labels and title
     plt.xlabel(x_label,fontsize=12)
     plt.ylabel(y_label, fontsize=12)
