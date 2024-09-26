@@ -487,7 +487,7 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values (X)
     return result_dfs
 
 # Create mR-chart function
-def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges', x_label='', title='mR-chart', 
+def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges (mR)', x_label='', title='mR-chart', 
              tickinterval=5, rotate_labels=0, round_value=2, dpi=300, show_xtick_labels='On'):
     
     """
