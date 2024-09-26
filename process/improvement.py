@@ -427,7 +427,7 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values (X)
 
     # Optionally remove x tick labels
     if (show_xtick_labels == 'Off') | (show_xtick_labels == 'off'):
-      plt.xticks([]
+      plt.xticks([])
     
     # Show plot
     plt.show()
@@ -599,7 +599,7 @@ def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges
 
     # Optionally remove or show x tick labels
     if (show_xtick_labels == 'Off') | (show_xtick_labels == 'off'):
-      plt.xticks([]
+      plt.xticks([])
                
     # Show plot
     plt.show()
