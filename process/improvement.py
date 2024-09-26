@@ -290,8 +290,8 @@ def limit_chart(df, values, x_labels, target, USL, LSL, title='Limit Chart', y_l
     return results_df
 
 # Create X-chart function
-def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x_label='',
-           fig_size=(15,3), tickinterval=5, round_value=1, dpi=300, rotate_labels=0):
+def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values (X)', x_label='',
+           fig_size=(15,3), tickinterval=5, round_value=1, dpi=300, rotate_labels=0, show_xtick_labels='On'):
     
     """
     Generate an X-chart (Individual Values Chart) from the provided DataFrame.
@@ -319,8 +319,10 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x
     dpi : int, optional
         Dots per inch (resolution) of the figure, default is 300.
     rotate_labels : int, optional
-        Specify the rotation for the xlabels. 
-
+        Specify the rotation for the xlabels.
+    show_xtick_labels : str, optional
+        Turn xtick labels on and off, default is "On". 
+        
     Returns:
     --------
     dict
@@ -422,6 +424,10 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x
     plt.xlabel(x_label,fontsize=12)
     plt.ylabel(y_label, fontsize=12)
     plt.title(title, fontsize=14)
+
+    # Optionally remove x tick labels
+    if (show_xtick_labels == 'Off') | (show_xtick_labels == 'off'):
+      plt.xticks([]
     
     # Show plot
     plt.show()
@@ -482,7 +488,7 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x
 
 # Create mR-chart function
 def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges', x_label='', title='mR-chart', 
-             tickinterval=5, rotate_labels=0, round_value=2, dpi=300):
+             tickinterval=5, rotate_labels=0, round_value=2, dpi=300, show_xtick_labels='On'):
     
     """
     Generate an mR-chart (Moving Range Chart) from the provided DataFrame. 
@@ -511,6 +517,8 @@ def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges
         Number of decimal places to round calculations, default is 2.
     dpi : int, optional
         Dots per inch (resolution) of the figure, default is 300.
+    show_xtick_labels : str, optional
+        Turn xtick labels on and off, default is "On". 
 
     Returns:
     --------
@@ -589,6 +597,10 @@ def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges
     plt.ylabel(y_label, fontsize=12)
     plt.title(title, fontsize=14)
 
+    # Optionally remove or show x tick labels
+    if (show_xtick_labels == 'Off') | (show_xtick_labels == 'off'):
+      plt.xticks([]
+               
     # Show plot
     plt.show()
     
