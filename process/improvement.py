@@ -482,7 +482,7 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x
 
 # Create mR-chart function
 def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges', x_label='', title='mR-chart', 
-             tick_interval=5, rotate_labels=0, round_value=2, dpi=300):
+             tickinterval=5, rotate_labels=0, round_value=2, dpi=300):
     
     """
     Generate an mR-chart (Moving Range Chart) from the provided DataFrame. 
@@ -503,7 +503,7 @@ def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges
         Label for the x-axis, default is an empty string.
     title : str, optional
         Title for the plot, default is 'mR-chart'.
-    tick_interval : int, optional
+    tickinterval : int, optional
         Specify the distance between x-ticks
     rotate_labels : int, optional
         Specify the rotation of the xlabels.
