@@ -414,7 +414,7 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values (X)
     # Set the x-tick labels with increased intervals
     tick_interval = tickinterval  # Increase this value to increase the spacing between ticks
     tick_positions = np.arange(0, len(labels), tick_interval)
-    ax.set_xticks(tick_positions+1)
+    ax.set_xticks(tick_positions)
     ax.set_xticklabels(labels.iloc[tick_positions], rotation=0, ha='center') 
 
     # Rotate xtick labels
@@ -586,7 +586,7 @@ def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges
     # Set the x-tick labels with increased intervals
     tick_interval = tickinterval  # Increase this value to increase the spacing between ticks
     tick_positions = np.arange(0, len(labels), tick_interval)
-    ax.set_xticks(tick_positions+1)
+    ax.set_xticks(tick_positions)
     ax.set_xticklabels(labels.iloc[tick_positions], rotation=0, ha='center') 
 
     # Rotate xtick labels
