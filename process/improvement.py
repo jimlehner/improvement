@@ -318,6 +318,8 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values', x
         Number of decimal places to round calculations, default is 2.
     dpi : int, optional
         Dots per inch (resolution) of the figure, default is 300.
+    rotate_labels : int, optional
+        Specify the rotation for the xlabels. 
 
     Returns:
     --------
