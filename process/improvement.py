@@ -1122,8 +1122,8 @@ def xchart_comparison(df_list, condition, x_labels, list_of_plot_labels, title='
     
     return results_df
 
-def mrchart_comparison(df_list, condition, x_labels, tickinterval=5, list_of_plot_labels, 
-                       title='mR-Chart Comparison', linestyle='-',
+def mrchart_comparison(df_list, condition, x_labels, list_of_plot_labels, 
+                       title='mR-Chart Comparison', linestyle='-', tickinterval=5,
                        colors=['tab:blue','tab:blue'], figsize=(15,3), 
                        dpi=300):
     
