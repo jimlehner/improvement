@@ -1122,7 +1122,7 @@ def xchart_comparison(df_list, condition, x_labels, list_of_plot_labels, title='
     
     return results_df
 
-def mrchart_comparison(df_list, condition, x_labels, list_of_plot_labels, 
+def mrchart_comparison(df_list, condition, x_labels, tickinterval=5, list_of_plot_labels, 
                        title='mR-Chart Comparison', linestyle='-',
                        colors=['tab:blue','tab:blue'], figsize=(15,3), 
                        dpi=300):
@@ -1138,6 +1138,8 @@ def mrchart_comparison(df_list, condition, x_labels, list_of_plot_labels,
         Column name in the DataFrames representing the data to be analyzed.
     x_labels : str
         Column name in the DataFrames representing the labels for the x-axis.
+    tickinterval : int, optional
+        The interval at which x-ticks are placed on the x-axis. Default is 5.
     list_of_plot_labels : list of str
         List of labels corresponding to each DataFrame in df_list.
     title : str, optional
@@ -1249,6 +1251,12 @@ def mrchart_comparison(df_list, condition, x_labels, list_of_plot_labels,
             tick_positions = np.arange(0, len(mRs), 10)
             ax.set_xticks(tick_positions)
             ax.set_xticklabels(x_labels[tick_positions], rotation=0, ha='center')
+
+        # Set the x-tick labels with increased intervals
+        tick_interval = tickinterval  # Increase this value to increase the spacing between ticks
+        tick_positions = np.arange(0, len(data), tick_interval)
+        ax.set_xticks(tick_positions)
+        ax.set_xticklabels(x_labels[tick_positions], rotation=0, ha='center')
             
     # Show figure 
     plt.show()
