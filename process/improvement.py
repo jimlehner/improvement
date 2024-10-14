@@ -632,7 +632,7 @@ def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges
     return result_dfs
 
 # Process behavior chart (pbc) function
-def pbc(df, values, x_labels, xchart_title='X-chart', mrchart_title='mR-chart', fig_size=(15,6), round_value=2, dpi=300):
+def pbc(df, values, x_labels, xchart_title='', mrchart_title='', fig_size=(15,6), round_value=2, dpi=300):
     
     """
     Generate an XmR-chart (X and mR-chart) from the provided DataFrame.
@@ -752,9 +752,10 @@ def pbc(df, values, x_labels, xchart_title='X-chart', mrchart_title='mR-chart', 
         axs[1].axhline(value, ls='--', color=color)
 
     # Specify spine visibility 
-    for value in range(0,2):
-        axs[value].spines[['top','right']].set_visible(False)
-        axs[value].spines[['left','bottom']].set_alpha(0.5)
+    sns.despine()
+    # for value in range(0,2):
+    #     axs[value].spines[['top','right']].set_visible(False)
+    #     axs[value].spines[['left','bottom']].set_alpha(0.5)
 
     # Specify axis labels and title for x-chart
     axs[0].set_ylabel('Individual values', fontsize=12)
@@ -764,8 +765,10 @@ def pbc(df, values, x_labels, xchart_title='X-chart', mrchart_title='mR-chart', 
     axs[1].set_xlabel('Observation',fontsize=0)
     axs[1].set_ylabel('Moving ranges', fontsize=12)
     axs[1].set_title(mrchart_title, fontsize=14)
-    
-    # Show PBC figure
+    # Remove xticks from mR chart
+    axs[1].set_xticks([])
+  
+    # Show XmR chart figure
     plt.show()
     
     # Create functions for labeling types of variation 
@@ -1097,9 +1100,8 @@ def xchart_comparison(df_list, condition, x_labels, list_of_plot_labels, title='
         # Styling axes
         ax.grid(False)
         ax.set_title(label, fontsize=12)
-        for spine in ['top', 'right']:
-            ax.spines[spine].set_visible(False)
-        ax.spines[['left','bottom']].set_alpha(0.5)
+        # Despine plot
+        sns.despine()
         ax.tick_params(axis='y', which='both', length=0)
         ax.tick_params(axis='x', which='both')
 
@@ -1123,7 +1125,7 @@ def xchart_comparison(df_list, condition, x_labels, list_of_plot_labels, title='
     return results_df
 
 def mrchart_comparison(df_list, condition, x_labels, list_of_plot_labels, 
-                       title='mR-Chart Comparison', linestyle='-', tickinterval=5,
+                       title='', linestyle='-', tickinterval=5,
                        colors=['tab:blue','tab:blue'], figsize=(15,3), 
                        dpi=300):
     
@@ -1235,28 +1237,23 @@ def mrchart_comparison(df_list, condition, x_labels, list_of_plot_labels,
         ax.grid(False)
         # Set title
         ax.set_title(label, fontsize=12)
-        for spine in ['top', 'right']:
-            ax.spines[spine].set_visible(False)
-        ax.spines[['left','bottom']].set_alpha(0.5)
+
+        # Despine plot
+        sns.despine()
+        
         ax.tick_params(axis='y', which='both', length=0)
         ax.tick_params(axis='x', which='both')#, length=1)
         
         # Add y-label only to the first plot
         if idx == 0:
             ax.set_ylabel('Moving Range', fontsize=12)
-        
-        # Suppress the FixedFormatter warning
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            tick_positions = np.arange(0, len(mRs), 10)
-            ax.set_xticks(tick_positions)
-            ax.set_xticklabels(x_labels[tick_positions], rotation=0, ha='center')
-
-        # Set the x-tick labels with increased intervals
-        tick_interval = tickinterval  # Increase this value to increase the spacing between ticks
-        tick_positions = np.arange(0, len(data), tick_interval)
-        ax.set_xticks(tick_positions)
-        ax.set_xticklabels(x_labels[tick_positions], rotation=0, ha='center')
+        # Remove xticks 
+        ax.set_xticks([])
+        # # Set the x-tick labels with increased intervals
+        # tick_interval = tickinterval  # Increase this value to increase the spacing between ticks
+        # tick_positions = np.arange(1, len(mRs), tick_interval)
+        # ax.set_xticks(tick_positions)
+        # ax.set_xticklabels(x_labels[tick_positions], rotation=0, ha='center')
             
     # Show figure 
     plt.show()
