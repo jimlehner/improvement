@@ -966,7 +966,7 @@ def network_analysis(df_list, condition, label_list, title='Network Analysis', r
 
 def xchart_comparison(df_list, condition, x_labels, list_of_plot_labels, title='',
                       linestyle='-', y_label='Individual Values (X)', tickinterval=5,
-                      colors=['tab:blue','tab:blue'], figsize=(12,4), 
+                      colors=['tab:blue','tab:blue'], figsize=(12,4), rotate_labels=0,
                       dpi=300):
     
     """
@@ -1004,6 +1004,9 @@ def xchart_comparison(df_list, condition, x_labels, list_of_plot_labels, title='
         
     figsize : tuple of int, optional
         The size of the figure in inches. Default is (12, 4).
+
+    rotate_labels : int, optional
+        Specify the rotation for the xlabels.
         
     dpi : int, optional
         The resolution of the figure in dots per inch. Default is 300.
@@ -1113,7 +1116,7 @@ def xchart_comparison(df_list, condition, x_labels, list_of_plot_labels, title='
         tick_interval = tickinterval  # Increase this value to increase the spacing between ticks
         tick_positions = np.arange(0, len(data), tick_interval)
         ax.set_xticks(tick_positions)
-        ax.set_xticklabels(x_labels[tick_positions], rotation=0, ha='center')
+        ax.set_xticklabels(x_labels[tick_positions], rotation=rotate_labels, ha='center')
 
     # Show figure 
     plt.show()
