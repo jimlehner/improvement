@@ -758,12 +758,12 @@ def pbc(df, values, x_labels, xchart_title='', mrchart_title='', fig_size=(15,6)
     #     axs[value].spines[['left','bottom']].set_alpha(0.5)
 
     # Specify axis labels and title for x-chart
-    axs[0].set_ylabel('Individual values', fontsize=12)
+    axs[0].set_ylabel('Individual Values (X)', fontsize=12)
     axs[0].set_title(xchart_title, fontsize=14)
     
     # Specify axis labels and title for mR-chart
     axs[1].set_xlabel('Observation',fontsize=0)
-    axs[1].set_ylabel('Moving ranges', fontsize=12)
+    axs[1].set_ylabel('Moving Range (mR)', fontsize=12)
     axs[1].set_title(mrchart_title, fontsize=14)
     # Remove xticks from mR chart
     axs[1].set_xticks([])
@@ -965,7 +965,7 @@ def network_analysis(df_list, condition, label_list, title='Network Analysis', r
     return results_df
 
 def xchart_comparison(df_list, condition, x_labels, list_of_plot_labels, title='',
-                      linestyle='-', y_label='Individual Values', tickinterval=5,
+                      linestyle='-', y_label='Individual Values (X)', tickinterval=5,
                       colors=['tab:blue','tab:blue'], figsize=(12,4), 
                       dpi=300):
     
@@ -1246,7 +1246,7 @@ def mrchart_comparison(df_list, condition, x_labels, list_of_plot_labels,
         
         # Add y-label only to the first plot
         if idx == 0:
-            ax.set_ylabel('Moving Range', fontsize=12)
+            ax.set_ylabel('Moving Range (mR)', fontsize=12)
         # Remove xticks 
         ax.set_xticks([])
         # # Set the x-tick labels with increased intervals
