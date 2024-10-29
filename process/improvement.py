@@ -280,7 +280,7 @@ def limit_chart(df, values, x_labels, target, USL, LSL, title='Limit Chart', y_l
                     'Spec Limit Range','# of Values','# Outside Spec', '% Outside Spec']
     chart_type = ['Limit Chart']*len(chart_params)
     chart_values = [round(x,round_value) for x in [mean, target, mean_to_target_delta, USL, LSL, SLR, 
-                    num_of_values, outside_spec, percent_outside_spec]
+                    num_of_values, outside_spec, percent_outside_spec]]
     # Create df for PBC parameters
     results_df = pd.DataFrame()
     results_df['Chart'] = pd.Series(chart_type)
