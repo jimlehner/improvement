@@ -369,8 +369,6 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values (X)
     C1 = 2.660
     C2 = 3.268
     
-    color = colors
-    
     # Isolate column to be used for x_labels
     x_labels_for_plots = [df[x_labels] for df in df_list]
     
