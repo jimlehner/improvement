@@ -216,7 +216,7 @@ def limit_chart(df, values, x_labels, target, USL, LSL, title='Limit Chart', y_l
     num_of_values = len(data)
     
     # Calculate the mean
-    mean = round(data.mean(),round_value)
+    mean = data.mean()
     mean_to_target_delta = target - mean
     
     # Calculate specification limit range (SLR)
@@ -225,8 +225,8 @@ def limit_chart(df, values, x_labels, target, USL, LSL, title='Limit Chart', y_l
     # Masking parameters for values outside process limits
     outside_USL = np.sum(data > USL)
     outside_LSL = np.sum(data < LSL)
-    outside_spec = round(outside_USL + outside_LSL,2)
-    percent_outside_spec = round((outside_spec/num_of_values)*100,2)
+    outside_spec = round(outside_USL + outside_LSL,round_value)
+    percent_outside_spec = round((outside_spec/num_of_values)*100,round_value)
     
     # Create masking parameters for values greater than and less than the process limits on X-chart
     upper_lim = np.ma.masked_where(data < USL, data)
@@ -255,9 +255,9 @@ def limit_chart(df, values, x_labels, target, USL, LSL, title='Limit Chart', y_l
     # Add text labels for limits and centerline
     bbox_props = dict(boxstyle="round,pad=0.3", fc="white", ec="grey", lw=1)
     bbox_props_centerlines = dict(boxstyle="round,pad=0.3", fc="white", ec="black", lw=1)
-    ax.text(ax.get_xlim()[1] * 1.0, USL, USL, color='grey', ha='center', va='center', bbox=bbox_props)
-    ax.text(ax.get_xlim()[1] * 1.0, LSL, LSL, color='tab:grey', ha='center', va='center', bbox=bbox_props)
-    ax.text(ax.get_xlim()[1] * 1.0, mean, mean, color='black', ha='center', va='center', bbox=bbox_props_centerlines)
+    ax.text(ax.get_xlim()[1] * 1.0, USL, round(USL,round_value), color='grey', ha='center', va='center', bbox=bbox_props)
+    ax.text(ax.get_xlim()[1] * 1.0, LSL, round(LSL,round_value), color='tab:grey', ha='center', va='center', bbox=bbox_props)
+    ax.text(ax.get_xlim()[1] * 1.0, mean, round(mean,round_value), color='black', ha='center', va='center', bbox=bbox_props_centerlines)
 
     # Add centerline and process limits 
     for value, color in chart_lines:
@@ -279,7 +279,7 @@ def limit_chart(df, values, x_labels, target, USL, LSL, title='Limit Chart', y_l
     chart_params = ['Mean','Target','Mean to Tar. Delta','USL','LSL',
                     'Spec Limit Range','# of Values','# Outside Spec', '% Outside Spec']
     chart_type = ['Limit Chart']*len(chart_params)
-    chart_values = [mean, target, mean_to_target_delta, USL, LSL, SLR, 
+    chart_values = [round(x,round_value) for x in [mean, target, mean_to_target_delta, USL, LSL, SLR, 
                     num_of_values, outside_spec, percent_outside_spec]
     # Create df for PBC parameters
     results_df = pd.DataFrame()
@@ -352,22 +352,22 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values (X)
     df['Moving Ranges'] = pd.Series(moving_ranges)
     
     # Calculate the mean
-    mean = round(data.mean(),round_value)
+    mean = data.mean()
     # Calculate the average moving range 
-    AmR = round(moving_ranges.mean(),round_value)
+    AmR = moving_ranges.mean()
     
     # Define the value of C1 and C2and calculate the UPL and LPL
     C1 = 2.660
     C2 = 3.268
     # Calculate the process limits
-    UPL = round(mean + (C1*AmR),round_value)
-    LPL = round(mean - (C1*AmR),round_value)
+    UPL = mean + (C1*AmR)
+    LPL = mean - (C1*AmR)
     # Calculate process limit range (PLR)
     PLR = UPL - LPL
     # Conditionally determine LPL if LPL is less than zero
     LPL = max(LPL,0)
     # Calculate the Upper Range Limit
-    URL = round(C2*AmR,round_value)
+    URL = C2*AmR
     
     # Create masking parameters for values greater than and less than the process limits on X-chart
     upper_lim = np.ma.masked_where(data < UPL, data)
@@ -399,9 +399,9 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values (X)
     # Add text labels for limits and centerline
     bbox_props = dict(boxstyle="round,pad=0.3", fc="white", ec="red", lw=1)
     bbox_props_centerlines = dict(boxstyle="round,pad=0.3", fc="white", ec="black", lw=1)
-    ax.text(ax.get_xlim()[1] * 1.0, UPL, UPL, color='red', ha='center', va='center', bbox=bbox_props)
-    ax.text(ax.get_xlim()[1] * 1.0, LPL, LPL, color='red', ha='center', va='center', bbox=bbox_props)
-    ax.text(ax.get_xlim()[1] * 1.0, mean, mean, color='black', ha='center', va='center', bbox=bbox_props_centerlines)
+    ax.text(ax.get_xlim()[1] * 1.0, UPL, round(UPL,round_value), color='red', ha='center', va='center', bbox=bbox_props)
+    ax.text(ax.get_xlim()[1] * 1.0, LPL, round(LPL,round_value), color='red', ha='center', va='center', bbox=bbox_props)
+    ax.text(ax.get_xlim()[1] * 1.0, mean, round(mean,round_value), color='black', ha='center', va='center', bbox=bbox_props_centerlines)
 
     # Add centerline and process limits 
     for value, color in xchart_lines:
@@ -437,7 +437,7 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values (X)
         if (value > UPL) | (value < LPL):
             return 'Assignable Cause'
         else:
-            return 'Routine Cause'
+            return 'Common Cause'
     
     # Apply variation_conditions
     df['X-Chart Variation'] = df[values].apply(xchart_variation)
@@ -445,34 +445,7 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values (X)
     # Create list of PBC paramters
     chart_type = ['X-Chart']*4
     xchart_params = ['Mean','UPL','LPL','PLR']
-    xchart_values = [mean,UPL,LPL,PLR]
-    # Create df for PBC parameters
-    PBC_params_df = pd.DataFrame()
-    PBC_params_df['Chart'] = pd.Series(chart_type)
-    PBC_params_df['Parameters'] = pd.Series(xchart_params)
-    PBC_params_df['Values'] = pd.Series(xchart_values)
-    
-    # Create dictionary of dfs
-    result_dfs = {'PBC Params':PBC_params_df, 
-                  'X-Chart Dataframe':df
-                 }
-    
-    return result_dfs
-    
-    # Create functions for labeling types of variation 
-    def xchart_variation(value):
-        if (value > UPL) | (value < LPL):
-            return 'Assignable Cause'
-        else:
-            return 'Routine Cause'
-    
-    # Apply variation_conditions
-    df['X-Chart Variation'] = df[values].apply(xchart_variation)
-    
-    # Create list of PBC paramters
-    chart_type = ['X-Chart']*4
-    xchart_params = ['Mean','UPL','LPL','PLR']
-    xchart_values = [mean,UPL,LPL,PLR]
+    xchart_values = [round(x,round_value) for x in [mean,UPL,LPL,PLR]]
     # Create df for PBC parameters
     PBC_params_df = pd.DataFrame()
     PBC_params_df['Chart'] = pd.Series(chart_type)
@@ -487,7 +460,7 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values (X)
     return result_dfs
 
 # Create mR-chart function
-def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges (mR)', x_label='', title='mR-chart', 
+def mrchart(df, values, x_labels, fig_size=(15,3), y_label='Moving Ranges (mR)', x_label='', title='mR-chart', 
              tickinterval=5, rotate_labels=0, round_value=2, dpi=300, show_xtick_labels='On'):
     
     """
@@ -497,8 +470,8 @@ def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges
     -----------
     df : pandas.DataFrame
         Input DataFrame containing the data.
-    moving_ranges : str
-        Column name in `df` representing the moving ranges.
+    values : str
+        Column name in `df` representing the values from which the moving range will be calculated.
     x_labels : str
         Column name in `df` for the x-axis labels.
     fig_size : tuple, optional
@@ -538,17 +511,20 @@ def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges
     mr_chart(df, 'Moving Ranges', 'Observation', title='Example mR-chart')
 
     """
-    
-    mRs = df[moving_ranges]
+    mRs = abs(df[values].diff())
     labels = df[x_labels]
+
+    # Add moving ranges to df as column
+    df = df.copy()
+    df['Moving Ranges'] = pd.Series(mRs)
     
     # Calculate the average moving range 
-    AmR = round(mRs.mean(),2)
+    AmR = mRs.mean()
 
     # Define the value of C2
-    C2 = 3.27
+    C2 = 3.268
     # Calculate the Upper Range Limit
-    URL = round(C2*AmR,round_value)
+    URL = C2*AmR
     
     # Create masking parameters for values greater than URL on mR-chart
     url_greater = np.ma.masked_where(mRs <= URL, mRs)
@@ -576,8 +552,8 @@ def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges
     # Add text labels for limits and centerline
     bbox_props = dict(boxstyle="round,pad=0.3", fc="white", ec="red", lw=1)
     bbox_props_centerlines = dict(boxstyle="round,pad=0.3", fc="white", ec="black", lw=1)
-    ax.text(ax.get_xlim()[1] * 1.0, URL, URL, color='red', ha='center', va='center', bbox=bbox_props)
-    ax.text(ax.get_xlim()[1] * 1.0, AmR, AmR, color='black', ha='center', va='center', bbox=bbox_props_centerlines)
+    ax.text(ax.get_xlim()[1] * 1.0, URL, round(URL,round_value), color='red', ha='center', va='center', bbox=bbox_props)
+    ax.text(ax.get_xlim()[1] * 1.0, AmR, round(AmR,round_value), color='black', ha='center', va='center', bbox=bbox_props_centerlines)
 
     # Specify spine visibility 
     ax.spines[['top','right']].set_visible(False)
@@ -609,7 +585,7 @@ def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges
         if value > URL:
             return 'Assignable Cause'
         else:
-            return 'Routine Cause'
+            return 'Common Cause'
     
     # Apply variation_conditions
     df['mR-Chart Variation'] = df['Moving Ranges'].apply(mrchart_variation)
@@ -617,7 +593,7 @@ def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges
     # Create list of PBC paramters
     chart_type = ['mR-Chart']*2
     param_names = ['AmR','URL']
-    param_values = [AmR,URL]
+    param_values = [round(x,round_value) for x in [AmR,URL]]
     # Create df for PBC parameters
     mrchart_params_df = pd.DataFrame()
     mrchart_params_df['Chart'] = pd.Series(chart_type)
@@ -632,10 +608,10 @@ def mrchart(df, moving_ranges, x_labels, fig_size=(15,3), y_label='Moving Ranges
     return result_dfs
 
 # Process behavior chart (pbc) function
-def pbc(df, values, x_labels, xchart_title='', mrchart_title='', fig_size=(15,6), round_value=2, dpi=300):
+def pbc(df, values, x_labels, xchart_title='', mrchart_title='', fig_size=(15,6), round_value=2, rotate_labels=0, tickinterval=2, dpi=300):
     
     """
-    Generate an XmR-chart (X and mR-chart) from the provided DataFrame.
+    Generate an XmR chart (X and mR-chart) from the provided DataFrame.
 
     Parameters:
     -----------
@@ -653,6 +629,10 @@ def pbc(df, values, x_labels, xchart_title='', mrchart_title='', fig_size=(15,6)
         Figure size in inches (width, height), default is (15, 6).
     round_value : int, optional
         Number of decimal places to round calculations, default is 2.
+    rotate_labels :
+        Specify the rotation for xlabels.
+    tickinterval : int, optional
+        Specify the distance between x-ticks.
     dpi : int, optional
         Dots per inch (resolution) of the figure, default is 300.
 
@@ -677,7 +657,7 @@ def pbc(df, values, x_labels, xchart_title='', mrchart_title='', fig_size=(15,6)
     
     # Disaggregate the dataframe 
     data = df[values]
-    moving_ranges = round(abs(data.diff()),round_value)
+    moving_ranges = abs(data.diff())
     labels = df[x_labels]
 
     # Add moving ranges to df as column
@@ -685,22 +665,22 @@ def pbc(df, values, x_labels, xchart_title='', mrchart_title='', fig_size=(15,6)
     df['Moving Ranges'] = pd.Series(moving_ranges)
     
     # Calculate the mean
-    mean = round(data.mean(),round_value)
+    mean = data.mean()
     # Calculate the average moving range 
-    AmR = round(moving_ranges.mean(),round_value)
+    AmR = moving_ranges.mean()
     
     # Define the value of C1 and C2and calculate the UPL and LPL
     C1 = 2.660
     C2 = 3.268
     # Calculate the process limits
-    UPL = round(mean + (C1*AmR),round_value)
-    LPL = round(mean - (C1*AmR),round_value)
+    UPL = mean + (C1*AmR)
+    LPL = mean - (C1*AmR)
     # Calculate process limit range (PLR)
     PLR = UPL - LPL
     # Conditionally determine LPL if LPL is less than zero
     LPL = max(LPL,0)
     # Calculate the Upper Range Limit
-    URL = round(C2*AmR,round_value)
+    URL = C2*AmR
     
     # Create masking parameters for values greater than and less than the process limits on X-chart
     upper_lim = np.ma.masked_where(data < UPL, data)
@@ -737,12 +717,12 @@ def pbc(df, values, x_labels, xchart_title='', mrchart_title='', fig_size=(15,6)
     # Add text labels for limits and centerline
     bbox_props = dict(boxstyle="round,pad=0.3", fc="white", ec="red", lw=1)
     bbox_props_centerline = dict(boxstyle="round,pad=0.3", fc="white", ec="black", lw=1)
-    axs[0].text(axs[0].get_xlim()[1] * 1.0, UPL, UPL, color='red', ha='center', va='center', bbox=bbox_props)
-    axs[0].text(axs[0].get_xlim()[1] * 1.0, LPL, LPL, color='red', ha='center', va='center', bbox=bbox_props)
-    axs[0].text(axs[0].get_xlim()[1] * 1.0, mean, mean, color='black', ha='center', va='center', bbox=bbox_props_centerline)
+    axs[0].text(axs[0].get_xlim()[1] * 1.0, UPL, round(UPL,round_value), color='red', ha='center', va='center', bbox=bbox_props)
+    axs[0].text(axs[0].get_xlim()[1] * 1.0, LPL, round(LPL,round_value), color='red', ha='center', va='center', bbox=bbox_props)
+    axs[0].text(axs[0].get_xlim()[1] * 1.0, mean, round(mean, round_value), color='black', ha='center', va='center', bbox=bbox_props_centerline)
     
-    axs[1].text(axs[1].get_xlim()[1] * 1.0, URL, URL, color='red', ha='center', va='center', bbox=bbox_props)
-    axs[1].text(axs[1].get_xlim()[1] * 1.0, AmR, AmR, color='black', ha='center', va='center', bbox=bbox_props_centerline)
+    axs[1].text(axs[1].get_xlim()[1] * 1.0, URL, round(URL,round_value), color='red', ha='center', va='center', bbox=bbox_props)
+    axs[1].text(axs[1].get_xlim()[1] * 1.0, AmR, round(AmR,round_value), color='black', ha='center', va='center', bbox=bbox_props_centerline)
 
     # Add centerline and process limits 
     for value, color in xchart_lines:
@@ -752,14 +732,19 @@ def pbc(df, values, x_labels, xchart_title='', mrchart_title='', fig_size=(15,6)
         axs[1].axhline(value, ls='--', color=color)
 
     # Specify spine visibility 
-    sns.despine()
-    # for value in range(0,2):
-    #     axs[value].spines[['top','right']].set_visible(False)
-    #     axs[value].spines[['left','bottom']].set_alpha(0.5)
+    # sns.despine()
+    for value in range(0,2):
+        axs[value].spines[['top','right']].set_visible(False)
+        axs[value].spines[['left','bottom']].set_alpha(0.5)
 
     # Specify axis labels and title for x-chart
     axs[0].set_ylabel('Individual Values (X)', fontsize=12)
     axs[0].set_title(xchart_title, fontsize=14)
+    # axs[0].tick_params(axis='x', rotation=rotate_labels)
+    # Specify the display of the tick intervals on the x-axis
+    tick_positions = np.arange(0, len(labels), tickinterval)
+    axs[0].set_xticks(tick_positions)
+    axs[0].set_xticklabels(labels.iloc[tick_positions], rotation=rotate_labels, ha='center')
     
     # Specify axis labels and title for mR-chart
     axs[1].set_xlabel('Observation',fontsize=0)
@@ -776,13 +761,13 @@ def pbc(df, values, x_labels, xchart_title='', mrchart_title='', fig_size=(15,6)
         if (value > UPL) | (value < LPL):
             return 'Assignable Cause'
         else:
-            return 'Routine Cause'
+            return 'Common Cause'
     
     def mrchart_variation(value):
         if value > URL:
             return 'Assignable Cause'
         else:
-            return 'Routine Cause'
+            return 'Common Cause'
     
     # Apply variation_conditions
     df['X-Chart Variation'] = df[values].apply(xchart_variation)
@@ -792,7 +777,8 @@ def pbc(df, values, x_labels, xchart_title='', mrchart_title='', fig_size=(15,6)
     chart_type = ['X-Chart']*4
     chart_type.extend(['mR-Chart'] * 2)
     param_names = ['Mean','UPL','LPL','PLR','AmR','URL']
-    param_values = [mean,UPL,LPL,PLR,AmR,URL]
+    param_values = [round(x,round_value) for x in [mean,UPL,LPL,PLR,AmR,URL]] 
+    # param_values = [mean,UPL,LPL,PLR,AmR,URL]
     # Create df for PBC parameters
     PBC_params_df = pd.DataFrame()
     PBC_params_df['Chart'] = pd.Series(chart_type)
