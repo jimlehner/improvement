@@ -294,167 +294,170 @@ def xchart(df, values, x_labels, title='X-chart', y_label='Individual Values (X)
            fig_size=(15,3), tickinterval=5, round_value=1, dpi=300, rotate_labels=0, show_xtick_labels='On'):
     
     """
-    Compare X-charts for multiple datasets and plot the results with specified x-axis labels.
+    Generate an X-chart (Individual Values Chart) from the provided DataFrame.
 
     Parameters:
     -----------
-    df_list : list of pandas.DataFrame
-        A list of DataFrames containing the data to be plotted. Each DataFrame represents a different dataset.
-        
-    condition : str
-        The column name in each DataFrame to be analyzed and plotted on the X-chart.
-        
+    df : pandas.DataFrame
+        Input DataFrame containing the data.
+    values : str
+        Column name in `df` representing the individual values.
     x_labels : str
-        The column name in each DataFrame to be used for x-axis labels (e.g., time or index).
-        
-    list_of_plot_labels : list of str
-        A list of labels for each individual plot, used as titles for the subplots. 
-        The list should be the same length as df_list.
-        
+        Column name in `df` for the x-axis labels.
     title : str, optional
-        The overall title of the entire plot. Default is an empty string.
-        
-    linestyle : str, optional
-        The line style for the plot lines (e.g., '-', '--', '-.', ':'). Default is '-' (solid line).
-        
+        Title for the plot, default is 'X-chart'.
     y_label : str, optional
-        The label for the y-axis. Default is 'Individual Values'.
-        
+        Label for the y-axis, default is 'Individual Values'.
+    x_label : str, optional
+        Label for the x-axis, default is an empty string.
     tickinterval : int, optional
-        The interval at which x-ticks are placed on the x-axis. Default is 5.
-    
+        Specify the distance between x-ticks
+    fig_size : tuple, optional
+        Figure size in inches (width, height), default is (15, 3).
     round_value : int, optional
         Number of decimal places to round calculations, default is 2.
-    
-    colors : list of str, optional
-        A list of colors for the plot lines. Default is ['tab:blue', 'tab:blue'].
-        
-    figsize : tuple of int, optional
-        The size of the figure in inches. Default is (12, 4).
-
+    dpi : int, optional
+        Dots per inch (resolution) of the figure, default is 300.
     rotate_labels : int, optional
         Specify the rotation for the xlabels.
+    show_xtick_labels : str, optional
+        Turn xtick labels on and off, default is "On". 
         
-    dpi : int, optional
-        The resolution of the figure in dots per inch. Default is 300.
-
     Returns:
     --------
-    pandas.DataFrame
-        A DataFrame containing calculated statistics and characterizations for each input DataFrame, 
-        including the mean, average moving range (AmR), upper and lower control limits (UPL, LPL), 
-        process limit range (PLR), upper range limit (URL), and whether the data is predictable or unpredictable.
+    dict
+        A dictionary containing DataFrames with calculated parameters and causes:
+        - 'PBC Params': DataFrame with calculated parameters 'Mean', 'UPL' (Upper Process Limit), 'LPL' (Lower Process Limit), and 'PLR' (Process Limit Range).
+        - 'X-Chart DataFrame': DataFrame with added column 'X-Chart Variation' categorizing causes as 'Routine Cause' or 'Assignable Cause'.
 
     Notes:
     ------
-    - This function generates X-charts (control charts) for each DataFrame in df_list, 
-      displaying individual values with their respective control limits.
-    - The function automatically determines whether the process is predictable or unpredictable 
-      based on whether all data points fall within the control limits.
-    - The x-ticks are customized based on the provided tick interval, which controls the spacing between ticks.
+    - The function plots the X-chart using matplotlib.
+    - Calculates the Mean, Upper Process Limit (UPL), Lower Process Limit (LPL), and Process Limit Range (PLR) based on the provided data.
+    - Identifies and categorizes routine and assignable causes based on the UPL and LPL.
 
-    Example Usage:
-    --------------
-    # Assuming df_list and label_list are predefined
-    results = xchart_comparison(
-        df_list=df_list, 
-        condition='data_column', 
-        x_labels='x_column', 
-        list_of_plot_labels=label_list, 
-        title='Comparison of X Control Charts'
-    )
+    Example:
+    --------
+    x_chart(df, 'Values', 'Observation', title='Example X-chart')
+
     """
     
-    # Constants for control limits
+    # Disaggregate the dataframe 
+    data = df[values]
+    moving_ranges = round(abs(data.diff()),round_value)
+    labels = df[x_labels]
+
+    # Add moving ranges to df as column
+    df = df.copy()
+    df['Moving Ranges'] = pd.Series(moving_ranges)
+    
+    # Calculate the mean
+    mean = data.mean()
+    # Calculate the average moving range 
+    AmR = moving_ranges.mean()
+    
+    # Define the value of C1 and C2and calculate the UPL and LPL
     C1 = 2.660
     C2 = 3.268
+    # Calculate the process limits
+    UPL = mean + (C1*AmR)
+    LPL = mean - (C1*AmR)
+    # Calculate process limit range (PLR)
+    PLR = UPL - LPL
+    # Conditionally determine LPL if LPL is less than zero
+    LPL = max(LPL,0)
+    # Calculate the Upper Range Limit
+    URL = C2*AmR
     
-    # Isolate column to be used for x_labels
-    x_labels_for_plots = [df[x_labels] for df in df_list]
+    # Create masking parameters for values greater than and less than the process limits on X-chart
+    upper_lim = np.ma.masked_where(data < UPL, data)
+    lower_lim = np.ma.masked_where(data > LPL, data)
+    # Create masking parameters for values greater than URL on mR-chart
+    url_greater = np.ma.masked_where(moving_ranges <= URL, moving_ranges)
+    url_less = np.ma.masked_where(moving_ranges > URL, moving_ranges)
     
-    stats= []
-    for df in df_list:
-        values = df[condition]
-        mR = abs(df[condition].diff())
-        # Calculate stats
-        mean = values.mean()
-        AmR = mR.mean()
-        UPL = mean+(C1*AmR)
-        LPL = max(0, mean-(C1*AmR))
-        PLR = UPL - LPL
-        URL = C2*AmR
-        
-        # Check if all value in mR are less than URL
-        characterization = 'Predictable' if all(LPL <= m <= UPL for m in values) else 'Unpredictable'
-        
-        # Append results to stats list
-        stats.append([mean, UPL, LPL, AmR, URL, characterization])
-        
-    # Create results dataframe
-    parameters = pd.DataFrame(stats, columns=['Mean', 'UPL', 'LPL','AmR', 'URL', 'Characterization'])
-    parameters['PLR'] = parameters['UPL'] - parameters['LPL']
-    parameters['Labels'] = list_of_plot_labels
-    parameters['mRs'] = [abs(df[condition].diff()) for df in df_list]
-    parameters['data'] = [df[condition] for df in df_list]
-    parameters['mR'] = [abs(df[condition].diff()) for df in df_list]
+    # Create list of tuples that specify value and color for mean, AmR, UPL, LPL, and URL
+    xchart_lines = [(mean,'black'), (UPL,'red'), (LPL,'red')]
+    mrchart_lines = [(AmR,'black'), (URL,'red')]
+    # Create list of tuples with y-coordinate and labels for x-chart process limits and centerline 
+    xchart_labels = [(UPL,UPL),(LPL,LPL),(mean,mean)]
+    # Create list of tuples with y-coordinate and labels for mR-chart process limit and centerline
+    mrchart_labels = [(URL,URL),(AmR,AmR)]
     
-    # Plotting
-    fig, axes = plt.subplots(nrows=1, ncols=2, figsize=figsize, sharey=True, dpi=dpi)
-    plt.subplots_adjust(wspace=0)
-    plt.suptitle(title, fontsize=14, y=1.05)
+    # Generate the X-chart
+    fig, ax = plt.subplots(figsize=fig_size, dpi=dpi)
 
-    axes = axes.flatten() if isinstance(axes, np.ndarray) else [axes]
+    # Plot data 
+    ax.plot(labels, data, marker='o')
 
-    for idx, (data, UPL, LPL, label, ax, x_labels) in enumerate(zip(
-        parameters['data'], 
-        parameters['UPL'], 
-        parameters['LPL'], 
-        parameters['Labels'], 
-        axes,
-        x_labels_for_plots)):
+    # Add masking parameters to color values outside process limits
+    ax.plot(labels, lower_lim, marker='o', ls='none', color='tab:red',
+            markeredgecolor='black', markersize=9)
+    ax.plot(labels, upper_lim, marker='o', ls='none', color='tab:red',
+            markeredgecolor='black', markersize=9)
+
+    # Add text labels for limits and centerline
+    bbox_props = dict(boxstyle="round,pad=0.3", fc="white", ec="red", lw=1)
+    bbox_props_centerlines = dict(boxstyle="round,pad=0.3", fc="white", ec="black", lw=1)
+    ax.text(ax.get_xlim()[1] * 1.0, UPL, round(UPL,round_value), color='red', ha='center', va='center', bbox=bbox_props)
+    ax.text(ax.get_xlim()[1] * 1.0, LPL, round(LPL,round_value), color='red', ha='center', va='center', bbox=bbox_props)
+    ax.text(ax.get_xlim()[1] * 1.0, mean, round(mean,round_value), color='black', ha='center', va='center', bbox=bbox_props_centerlines)
+
+    # Add centerline and process limits 
+    for value, color in xchart_lines:
+        plt.axhline(value, ls='--', c=color)
+
+    # Specify spine visibility 
+    ax.spines[['top','right']].set_visible(False)
+    ax.spines[['left','bottom']].set_alpha(0.5)
     
-        # Plot data
-        ax.plot(data, marker='o', ls=linestyle, color=color[idx % len(color)])
+    # Set the x-tick labels with increased intervals
+    tick_interval = tickinterval  # Increase this value to increase the spacing between ticks
+    tick_positions = np.arange(0, len(labels), tick_interval)
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels(labels.iloc[tick_positions], rotation=0, ha='center') 
 
-        # Masking and plotting limits
-        ax.plot(np.ma.masked_where(data < UPL, data), marker='o', ls='none', color='red', markeredgecolor='black', markersize=9)
-        ax.plot(np.ma.masked_where(data > LPL, data), marker='o', ls='none', color='red', markeredgecolor='black', markersize=9)
+    # Rotate xtick labels
+    plt.xticks(rotation=rotate_labels)
 
-        # Plotting lines for mean, UPL, and LPL
-        mean = np.mean(data)
-        ax.axhline(mean, ls='--', color='black')
-        ax.axhline(UPL, ls='--', color='red')
-        ax.axhline(LPL, ls='--', color='red')
+    # Specify axis labels and title
+    plt.xlabel(x_label,fontsize=12)
+    plt.ylabel(y_label, fontsize=12)
+    plt.title(title, fontsize=14)
 
-        # Styling axes
-        ax.grid(False)
-        ax.set_title(label, fontsize=12)
-        # Despine plot
-        sns.despine()
-        for spine in ['left','bottom']:
-            ax.spines[spine].set_alpha(0.5)
-        
-        ax.tick_params(axis='y', which='both', length=0)
-        ax.tick_params(axis='x', which='both')
-
-        # Add y-label only to the first plot
-        if idx == 0:
-            ax.set_ylabel(y_label, fontsize=12)
-
-        # Set the x-tick labels with increased intervals
-        tick_interval = tickinterval  # Increase this value to increase the spacing between ticks
-        tick_positions = np.arange(0, len(data), tick_interval)
-        ax.set_xticks(tick_positions)
-        ax.set_xticklabels(x_labels[tick_positions], rotation=rotate_labels, ha='center')
-
-    # Show figure 
+    # Optionally remove x tick labels
+    if (show_xtick_labels == 'Off') | (show_xtick_labels == 'off'):
+      plt.xticks([])
+    
+    # Show plot
     plt.show()
     
-    # Reorder and return the results dataframe
-    new_order = ['Labels', 'Mean', 'UPL', 'LPL', 'PLR', 'AmR', 'URL', 'Characterization']
-    results_df = round(parameters[new_order],round_value)
+    # Create functions for labeling types of variation 
+    def xchart_variation(value):
+        if (value > UPL) | (value < LPL):
+            return 'Assignable Cause'
+        else:
+            return 'Common Cause'
     
-    return results_df
+    # Apply variation_conditions
+    df['X-Chart Variation'] = df[values].apply(xchart_variation)
+    
+    # Create list of PBC paramters
+    chart_type = ['X-Chart']*4
+    xchart_params = ['Mean','UPL','LPL','PLR']
+    xchart_values = [round(x,round_value) for x in [mean,UPL,LPL,PLR]]
+    # Create df for PBC parameters
+    PBC_params_df = pd.DataFrame()
+    PBC_params_df['Chart'] = pd.Series(chart_type)
+    PBC_params_df['Parameters'] = pd.Series(xchart_params)
+    PBC_params_df['Values'] = pd.Series(xchart_values)
+    
+    # Create dictionary of dfs
+    result_dfs = {'PBC Params':PBC_params_df, 
+                  'X-Chart Dataframe':df
+                 }
+    
+    return result_dfs
 
 # Create mR-chart function
 def mrchart(df, values, x_labels, fig_size=(15,3), y_label='Moving Ranges (mR)', x_label='', title='mR-chart', 
