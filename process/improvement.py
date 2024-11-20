@@ -1086,7 +1086,7 @@ def network_analysis_limit_plot(df_list, condition, label_list, USL, LSL, Target
         # Plotting lines for mean, UPL, and LPL
         mean = np.mean(data)
         ax.axhline(mean, ls='--', color='black')
-        ax.axhline(target, ls='--', color='green')
+        ax.axhline(Target, ls='--', color='green')
         ax.axhline(USL, ls='--', color='gray')
         ax.axhline(LSL, ls='--', color='gray')
         
