@@ -1,5 +1,5 @@
 # improvement.py (version-0.2)
-`improvement.py` is a collection of functions designed to facilitate the understanding and elimination of `routine` and `assignable` causes of variation in business and industrial processes. The primary tool to facilitate this understanding is the process behavior chart, otherwise known as the control chart.  
+`improvement.py` is a collection of functions designed to facilitate the understanding and elimination of common causes of routine variation and assignable causes of exceptional variation from business and industrial processes. The primary tool to facilitate this understanding is the process behavior chart, otherwise known as the control chart.  
 
 Visit [BrokenQuality.com](https://www.brokenquality.com/bookshelf) for resources and more details regarding the application and use of `process behavior charts`. 
 
