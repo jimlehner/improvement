@@ -4,6 +4,7 @@
 # Added xchart_comparison and mrchart_comparison functions
 
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import seaborn as sns
 import numpy as np
 import pandas as pd
